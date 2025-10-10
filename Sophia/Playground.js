@@ -17,7 +17,7 @@ const p1Pad = Pads.get(0);
 const p2Pad = Pads.get(1);
 
 // Change your root folder to "gpractice" so we can work with file path magic :p
-os.chdir("gpractice");
+os.chdir("Sophia");
 
 const tile_lightstone = new Image("tiles_64lightstone.png");//tiles_64not   tiles_32lightstone
 const sprite = new Image("tiles_64not.png");
