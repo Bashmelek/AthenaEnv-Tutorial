@@ -66,7 +66,7 @@ tile_dblue.width = 32;
 tile_dblue.height = 32;
 
 function tryMoveChar_Continuous(cpos, vec) {
-    //std.printf("testFunc\n");
+    std.printf("\n");
 
     var dir = { x: Math.sign(vec.x), y: Math.sign(vec.y) };
 
@@ -83,8 +83,8 @@ function tryMoveChar_Continuous(cpos, vec) {
     var nty = cpos.y + vec.y;
     var nby = cpos.y + cpos.height + vec.y;
 
-    var newleftx = Math.floor((cpos.x + vec.x) / 32) % 20;
-    var newrightx = Math.floor((cpos.x + cpos.width + vec.x) / 32) % 20;
+    var newleftx = Math.floor((cpos.x + vec.x) / 32);
+    var newrightx = Math.floor((cpos.x + cpos.width + vec.x) / 32);
     var newtopy = Math.floor((cpos.y + vec.y) / 32);//Math.floor(Math.floor((cpos.y + dir.y) / 32) / 20);
     var newboty = Math.floor((cpos.y + cpos.height + vec.y) / 32);//Math.floor(Math.floor((cpos.y + cpos.height + dir.y) / 32) / 20);
 
@@ -96,21 +96,21 @@ function tryMoveChar_Continuous(cpos, vec) {
             
             //std.printf(" at pixel: " + p);//54 + i * 3 + 20 * 3(14 - 1 - j)    
 
-            if(bmap[p + 0] == 0) {
+            if(bmap[p + 0] == 0 || i < 0 || j < 0 || i > 19 || j > 13) {
 
                 if(nlx < (i + 1.0) * 32.0 && olx >= ((i + 1.0) * 32.0) - 0.02){//from right
                     //std.printf(" a ");
-                    std.printf(" a ");
-                    std.printf(olx);
-                    std.printf(" , ");
-                    std.printf((i + 1.0) * 32.0);
+                    //std.printf(" a ");
+                    //std.printf(olx);
+                    //std.printf(" , ");
+                    //std.printf((i + 1.0) * 32.0);
 
                     vec.x = ((i + 1.0) * 32.0) - olx + 0.02;
                 } else if(nrx > (i * 32.0) && orx <= (i * 32.0) + 0.02) {//from left
-                    std.printf(" b ");
-                    std.printf(orx);
-                    std.printf(" , ");
-                    std.printf((i * 32.0));
+                    //std.printf(" b ");
+                    //std.printf(orx);
+                    //std.printf(" , ");
+                    //std.printf((i * 32.0));
                     vec.x = (i * 32.0) - orx - 0.02;
                 } else if(nty < (j + 1.0) * 32.0 && oty >= ((j + 1.0) * 32.0) - 0.02){// 
                     
@@ -118,8 +118,8 @@ function tryMoveChar_Continuous(cpos, vec) {
                     vec.y = ((j + 1.0) * 32.0) - oty + 0.02;
                 } else if(nby > (j * 32.0) && oby <= (j * 32.0) + 0.02) {// 
                     
-                    std.printf(" d ");
-                    std.printf((j * 32.0));
+                    //std.printf(" d ");
+                    //std.printf((j * 32.0));
                     vec.y = (j * 32.0) - oby - 0.02;
                 } else {
                     std.printf(" ee ");
