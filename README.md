@@ -21,4 +21,4 @@ To have a working program in AthenaEnv you need just 3 files:<br/>
 -athena.ini<br/>
 -a js file that athena.ini references.<br/>
 
-So find you athena.ini, make it point to a new js file, and fill that new js file with the contents of https://github.com/Bashmelek/AthenaEnv-Tutorial/blob/main/Sophia/Tutorial_00.js.  The guide begins there.
+So find you athena.ini, make it point to a new js file, and fill that new js file with the contents of https://github.com/Bashmelek/AthenaEnv-Tutorial/blob/main/Sophia/Tutorial_00.js and open its corresponding wiki page at https://github.com/Bashmelek/AthenaEnv-Tutorial/wiki/Tutorial_00. The guide begins there.
