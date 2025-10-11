@@ -1,7 +1,7 @@
 # Sophia - AthenaEnv Tutorial
 Tutorial and Survival Tips for Using AthenaEnv to make PS2 Games
 
-<br/>
+
 ____________________________________________
 AthenaEnv is not made by me, but by Github user DanielSant0s at https://github.com/DanielSant0s/AthenaEnv/tree/main. It am just making this starter guide.  I would also like to give thanks to https://jslegenddev.substack.com/p/you-can-now-make-ps2-games-in-javascript and to the Discord channel.
 ____________________________________________
