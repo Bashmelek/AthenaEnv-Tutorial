@@ -65,14 +65,28 @@ tile_lightstone.height = 32;
 tile_dblue.width = 32;
 tile_dblue.height = 32;
 
-function tryMoveChar_Continuous(cpos, dir) {
+function tryMoveChar_Continuous(cpos, vec) {
     std.printf("testFunc\n");
 
+    var dir = { x: Math.sign(vec.x), y: Math.sign(vec.y) };
+
+    //var slope = vec.y / vec.x;
+
     //find range of cells to track
-    var newleftx = Math.floor((cpos.x + dir.x) / 32) % 20;
-    var newrightx = Math.floor((cpos.x + cpos.width + dir.x) / 32) % 20;
-    var newtopy = Math.floor((cpos.y + dir.y) / 32);//Math.floor(Math.floor((cpos.y + dir.y) / 32) / 20);
-    var newboty = Math.floor((cpos.y + cpos.height + dir.y) / 32);//Math.floor(Math.floor((cpos.y + cpos.height + dir.y) / 32) / 20);
+    var olx = cpos.x;
+    var orx = cpos.x + cpos.width;
+    var oty = cpos.y;
+    var oby = cpos.y + cpos.height;
+
+    var nlx = cpos.x + vec.x;
+    var nrx = cpos.x + cpos.width + vec.x;
+    var nty = cpos.y + vec.y;
+    var nby = cpos.y + cpos.height + vec.y;
+
+    var newleftx = Math.floor((cpos.x + vec.x) / 32) % 20;
+    var newrightx = Math.floor((cpos.x + cpos.width + vec.x) / 32) % 20;
+    var newtopy = Math.floor((cpos.y + vec.y) / 32);//Math.floor(Math.floor((cpos.y + dir.y) / 32) / 20);
+    var newboty = Math.floor((cpos.y + cpos.height + vec.y) / 32);//Math.floor(Math.floor((cpos.y + cpos.height + dir.y) / 32) / 20);
 
     std.printf(newleftx + "-" + newrightx + ", " + newtopy + "-" + newboty);
 
@@ -80,18 +94,46 @@ function tryMoveChar_Continuous(cpos, dir) {
         for(var j = newtopy; j <= newboty; j++) {
             var p = START_BMP24 + ((14 - 1 - j) * 20 * 3) + i * 3;
             
-            std.printf(" at pixel: " + p);//54 + i * 3 + 20 * 3(14 - 1 - j)    
+            //std.printf(" at pixel: " + p);//54 + i * 3 + 20 * 3(14 - 1 - j)    
 
             if(bmap[p + 0] == 0) {
-                std.printf(" < hit ");
-                dir.x = 0.0;
-                dir.y = 0.0;
+
+                if(nlx < (i + 1.0) * 32.0 && olx >= ((i + 1.0) * 32.0) - 0.02){//from right
+                    //std.printf(" a ");
+                    std.printf(" a ");
+                    std.printf(olx);
+                    std.printf(" , ");
+                    std.printf((i + 1.0) * 32.0);
+
+                    vec.x = ((i + 1.0) * 32.0) - olx;
+                } else if(nrx > (i * 32.0) && orx <= (i * 32.0) + 0.02) {//from left
+                    std.printf(" b ");
+                    std.printf(orx);
+                    std.printf(" , ");
+                    std.printf((i * 32.0));
+                    vec.x = (i * 32.0) - orx - 0.02;
+                } else if(nty < (j + 1.0) * 32.0 && oty >= ((j + 1.0) * 32.0) - 0.02){// 
+                    
+                    //std.printf(" c ");
+                    vec.y = ((j + 1.0) * 32.0) - oty;
+                } else if(nby > (j * 32.0) && oby <= (j * 32.0) + 0.02) {// 
+                    
+                    std.printf(" d ");
+                    std.printf((j * 32.0));
+                    vec.y = (j * 32.0) - oby - 0.02;
+                } else {
+                    std.printf(" ee ");
+                    vec.x = 0.0;
+                    vec.y = 0.0;
+                }
+
+                std.printf(" < hit " + vec.x + ' ' + vec.y + '   ');
             }
         }
     }
 
-    cpos.x += dir.x;
-    cpos.y += dir.y;
+    cpos.x += vec.x;
+    cpos.y += vec.y;
 
 }
 
