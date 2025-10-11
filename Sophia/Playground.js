@@ -3,6 +3,8 @@ const font = new Font("default");
 //Screen.setFrameCounter(true);
 //Screen.setVSync(false);
 
+const resfolder = "customresources" //res   customresources
+
 const videoMode = Screen.getMode();
 videoMode.width = 640;
 videoMode.height = 448;
@@ -19,14 +21,14 @@ const p2Pad = Pads.get(1);
 // Change your root folder to "gpractice" so we can work with file path magic :p
 os.chdir("Sophia");
 
-const tile_lightstone = new Image("tiles_64lightstone.png");//tiles_64not   tiles_32lightstone
-const sprite = new Image("tiles_64not.png");
-const tile_dblue = new Image("tiles_64darkerblue.png");
+const tile_lightstone = new Image(resfolder + "/tiles_64lightstone.png");//tiles_64not   tiles_32lightstone
+const sprite = new Image(resfolder + "/tiles_64not.png");
+const tile_dblue = new Image(resfolder + "/tiles_64darkerblue.png");
 
 
-const tile_32 = new Image("tiles_64not.png");
+const tile_32 = new Image(resfolder + "/tiles_64not.png");
 //
-let areamap_demo = std.open("maparea_demo0.bmp", "r");// new Image("maparea_demo0.bmp");
+let areamap_demo = std.open(resfolder + "/maparea_demo0.bmp", "r");// new Image("maparea_demo0.bmp");
 
 const START_BMP24 = 54;
 
@@ -34,7 +36,7 @@ var abmap = new ArrayBuffer(14 * 20 * 3 + START_BMP24);
 areamap_demo.read(abmap, 0, 14 * 20 * 3 - 0 + START_BMP24)
 var bmap = new Uint8Array(abmap);
 
-let largebg = new Image("Loulou_UomoScreen.png");
+let largebg = new Image(resfolder + "/Loulou_UomoScreen.png");
 
 let areamap_pixels = new Int8Array(areamap_demo.pixels);
 
