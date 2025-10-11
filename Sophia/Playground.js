@@ -66,7 +66,7 @@ tile_dblue.width = 32;
 tile_dblue.height = 32;
 
 function tryMoveChar_Continuous(cpos, vec) {
-    std.printf("testFunc\n");
+    //std.printf("testFunc\n");
 
     var dir = { x: Math.sign(vec.x), y: Math.sign(vec.y) };
 
@@ -105,7 +105,7 @@ function tryMoveChar_Continuous(cpos, vec) {
                     std.printf(" , ");
                     std.printf((i + 1.0) * 32.0);
 
-                    vec.x = ((i + 1.0) * 32.0) - olx;
+                    vec.x = ((i + 1.0) * 32.0) - olx + 0.02;
                 } else if(nrx > (i * 32.0) && orx <= (i * 32.0) + 0.02) {//from left
                     std.printf(" b ");
                     std.printf(orx);
@@ -115,7 +115,7 @@ function tryMoveChar_Continuous(cpos, vec) {
                 } else if(nty < (j + 1.0) * 32.0 && oty >= ((j + 1.0) * 32.0) - 0.02){// 
                     
                     //std.printf(" c ");
-                    vec.y = ((j + 1.0) * 32.0) - oty;
+                    vec.y = ((j + 1.0) * 32.0) - oty + 0.02;
                 } else if(nby > (j * 32.0) && oby <= (j * 32.0) + 0.02) {// 
                     
                     std.printf(" d ");
