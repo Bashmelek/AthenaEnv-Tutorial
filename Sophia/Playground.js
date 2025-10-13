@@ -35,7 +35,7 @@ screen_640x448.endx = 640;
 screen_640x448.endy = 448;
 screen_640x448.width = 640;
 screen_640x448.height = 448;
-let blankscreen_pixels = new Int8Array(screen_640x448.pixels);
+let blankscreen_pixels = new Int32Array(screen_640x448.pixels);
 
 
 
@@ -156,8 +156,8 @@ function SetBackGroundSprite_Static(){
 
     //const work_640x448 = new Image(resfolder + "/blank_640x448.png");// blankred_64 
     //let work_pixels = new Int8Array(work_640x448.pixels);
-    let tile_dblue_pixels = new Int8Array(tile_dblue.pixels);
-    let tile_lightstone_pixels = new Int8Array(tile_lightstone.pixels);
+    let tile_dblue_pixels = new Int32Array(tile_dblue.pixels);// BigInt64Array   Int32Array
+    let tile_lightstone_pixels = new Int32Array(tile_lightstone.pixels);//
  
     std.printf("\n\nHEYEYE HEY " + blankscreen_pixels.length + "\n\n");
 
@@ -174,13 +174,22 @@ function SetBackGroundSprite_Static(){
                 currentSource = tile_lightstone_pixels;
             } 
 
+            var startbyte = tj * 32 * 640 + ti * 32;//tj * 32 * 640 * 4 + ti * 32 * 4;
+
             for(var bi = 0; bi < 32; bi++) {
-                for(var bj = 0; bj < 32; bj++) {
-                    var b = tj * 32 * 640 * 4 + ti * 32 * 4 + (bj * 640 + bi)* 4;
-                    blankscreen_pixels[b + 0] = currentSource[(bi % 64 * 64 + (bj % 64)) * 4 + 0];
-                    blankscreen_pixels[b + 1] = currentSource[(bi % 64 * 64 + (bj % 64)) * 4 + 1];
-                    blankscreen_pixels[b + 2] = currentSource[(bi % 64 * 64 + (bj % 64)) * 4 + 2];
-                    blankscreen_pixels[b + 3] = currentSource[(bi % 64 * 64 + (bj % 64)) * 4 + 3];
+                var offsetbi = startbyte + (bi * 640);
+                var offsetsbi = bi * 64;// bi % 64 * 64;
+
+                for(var bj = 0; bj < 32; bj+=4) {//32
+                    var b = offsetbi + bj;
+                    var sb = (offsetsbi +  bj);//(bj % 64));
+                    blankscreen_pixels[b] = currentSource[sb];
+                    blankscreen_pixels[b + 1] = currentSource[sb + 1];
+                    blankscreen_pixels[b + 2] = currentSource[sb + 2];
+                    blankscreen_pixels[b + 3] = currentSource[sb + 3];
+                    //blankscreen_pixels[b + 1] = currentSource[sb + 1];
+                    //blankscreen_pixels[b + 2] = currentSource[sb + 2];
+                    //blankscreen_pixels[b + 3] = currentSource[sb + 3];
                 }
             }
 
