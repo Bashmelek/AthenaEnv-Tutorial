@@ -26,19 +26,30 @@ const sprite = new Image(resfolder + "/tiles_64not.png");
 const tile_dblue = new Image(resfolder + "/tiles_64darkerblue.png");
 
 
-const tile_32 = new Image(resfolder + "/tiles_64not.png");
-//
-let areamap_demo = std.open(resfolder + "/maparea_demo0.bmp", "r");// new Image("maparea_demo0.bmp");
+//const tile_32 = new Image(resfolder + "/tiles_64not.png");
+
+const screen_640x448 = new Image(resfolder + "/blankred_640x448.png");// blankred_64 
+screen_640x448.x = 0;
+screen_640x448.y = 0;
+screen_640x448.endx = 640;
+screen_640x448.endy = 448;
+screen_640x448.width = 640;
+screen_640x448.height = 448;
+let blankscreen_pixels = new Int8Array(screen_640x448.pixels);
+
+
 
 const START_BMP24 = 54;
+
+let areamap_demo = std.open(resfolder + "/maparea_demo0.bmp", "r");// new Image("maparea_demo0.bmp");
 
 var abmap = new ArrayBuffer(14 * 20 * 3 + START_BMP24);
 areamap_demo.read(abmap, 0, 14 * 20 * 3 - 0 + START_BMP24)
 var bmap = new Uint8Array(abmap);
+let areamap_pixels = new Int8Array(areamap_demo.pixels);
+
 
 let largebg = new Image(resfolder + "/Loulou_UomoScreen.png");
-
-let areamap_pixels = new Int8Array(areamap_demo.pixels);
 
 var charpos = { x: 50.0, y: 50.0, width: 64, height: 64, drawoffsetx: 0.0, drawoffsety: 0.0, isFlipped: false }
 
@@ -48,12 +59,12 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Screen.getMode();
 largebg.width = 640;
 largebg.height = 448;
 
-tile_32.x = 0;
-tile_32.y = 0;
-tile_32.endx = 32;
-tile_32.endy = 32;
-tile_32.width = 32;
-tile_32.height = 32;
+// tile_32.x = 0;
+// tile_32.y = 0;
+// tile_32.endx = 32;
+// tile_32.endy = 32;
+// tile_32.width = 32;
+// tile_32.height = 32;
 
 sprite.x = 0;
 sprite.y = 0;
@@ -139,6 +150,65 @@ function tryMoveChar_Continuous(cpos, vec) {
 
 }
 
+function SetBackGroundSprite_Static(){
+
+//
+
+    //const work_640x448 = new Image(resfolder + "/blank_640x448.png");// blankred_64 
+    //let work_pixels = new Int8Array(work_640x448.pixels);
+    let tile_dblue_pixels = new Int8Array(tile_dblue.pixels);
+    let tile_lightstone_pixels = new Int8Array(tile_lightstone.pixels);
+ 
+    std.printf("\n\nHEYEYE HEY " + blankscreen_pixels.length + "\n\n");
+
+    var currentSource = tile_dblue_pixels;
+
+    for(var ti = 0; ti < 20; ti++) {
+        for(var tj = 0; tj < 14; tj++) {
+    
+            var p = START_BMP24 + ((14 - 1 - tj) * 20 * 3) + ti * 3;
+            if (bmap[p + 0] == 0) {
+                currentSource = tile_dblue_pixels;
+            }
+            if (bmap[p + 0] == 255) { //-1
+                currentSource = tile_lightstone_pixels;
+            } 
+
+            for(var bi = 0; bi < 32; bi++) {
+                for(var bj = 0; bj < 32; bj++) {
+                    var b = tj * 32 * 640 * 4 + ti * 32 * 4 + (bj * 640 + bi)* 4;
+                    blankscreen_pixels[b + 0] = currentSource[(bi % 64 * 64 + (bj % 64)) * 4 + 0];
+                    blankscreen_pixels[b + 1] = currentSource[(bi % 64 * 64 + (bj % 64)) * 4 + 1];
+                    blankscreen_pixels[b + 2] = currentSource[(bi % 64 * 64 + (bj % 64)) * 4 + 2];
+                    blankscreen_pixels[b + 3] = currentSource[(bi % 64 * 64 + (bj % 64)) * 4 + 3];
+                }
+            }
+
+        }
+    }
+
+
+    // const blank_128 = new Image(resfolder + "/blankred_128.png");// blankred_64 
+    // let blank128_pixels = new Int8Array(blank_128.pixels);
+    // let tile_dblue_pixels = new Int8Array(sprite.pixels);
+
+    // std.printf("\n\nHEYEYE HEY" + blank128_pixels.length + "\n\n");
+
+    // for(var bi = 0; bi < 128; bi++) {
+    //     for(var bj = 0; bj < 128; bj++) {
+    //         var sx = bi % 64;
+    //         var xy = bj % 64;
+    //         blank128_pixels[(bi * 128 + bj)* 4 + 0] = tile_dblue_pixels[(bi % 64 * 64 + (bj % 64)) * 4 + 0];
+    //         blank128_pixels[(bi * 128 + bj)* 4 + 1] = tile_dblue_pixels[(bi % 64 * 64 + (bj % 64)) * 4 + 1];
+    //         blank128_pixels[(bi * 128 + bj)* 4 + 2] = tile_dblue_pixels[(bi % 64 * 64 + (bj % 64)) * 4 + 2];
+    //         blank128_pixels[(bi * 128 + bj) * 4 + 3] = tile_dblue_pixels[(bi % 64 * 64 + (bj % 64)) * 4 + 3];
+    //     }
+    // }
+}
+
+//setup bg
+SetBackGroundSprite_Static();
+
 Screen.display(() => {
    //if (timer.get() > frameDuration) {
    //   if (frameIndex < runAnimFrames.length - 1) {
@@ -151,14 +221,6 @@ Screen.display(() => {
 
    
     framecounter++;
-    //testFunc();
-
-
-    //tilelightstone.x = 0;
-    //std.printf(" " + areamap_pixels.length + '\n');
-    //std.puts(areamap_demo.pixels.length);
-
-    ////largebg.draw(0, 0);
 
     //for (var p = START_BMP24; p < bmap.length + START_BMP24; p += 3) {
     //    std.printf(" " + bmap[p + 0]);
@@ -174,17 +236,19 @@ Screen.display(() => {
     //    //}
     //}
 
-    for (var j = 0; j < 14; j++) { //14
-        for (var i = 0; i < 20; i++)  {
-            var p = START_BMP24 + ((14 - 1 - j) * 20 * 3) + i * 3;
-            if (bmap[p + 0] == 0) {
-                tile_dblue.draw(i * 32, (j) * 32);
-            }
-            if (bmap[p + 0] == 255) { //-1
-                tile_lightstone.draw(i * 32, (j) * 32);
-            } 
-        }
-    }
+
+    ////old perframe way off drawing bg
+    //for (var j = 0; j < 14; j++) { //14
+    //    for (var i = 0; i < 20; i++)  {
+    //        var p = START_BMP24 + ((14 - 1 - j) * 20 * 3) + i * 3;
+    //        if (bmap[p + 0] == 0) {
+    //            tile_dblue.draw(i * 32, (j) * 32);
+    //        }
+    //        if (bmap[p + 0] == 255) { //-1
+    //            tile_lightstone.draw(i * 32, (j) * 32);
+    //        } 
+    //    }
+    //}
 
 
     font.print(10, 10, "Why dost thou continue?");    
@@ -224,8 +288,10 @@ Screen.display(() => {
         //charpos.y = charpos.y + 5.09;
     }
    
+    screen_640x448.draw(0.0, 0.0);//tile_dblue   screen_640x448
     sprite.draw(charpos.x + charpos.drawoffsetx, charpos.y + charpos.drawoffsety);
-    //sprite.draw(charpos.x + 40, charpos.y);
+    ////sprite.draw(charpos.x + 40, charpos.y);
+    ////blank_128.draw(20.0, 20.0)
 });
 
 //os.setInterval(() => { // Basically creates an infinite loop, similar to while true(you can use it too).
