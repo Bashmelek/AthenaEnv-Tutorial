@@ -54,6 +54,8 @@ let areamap_pixels = new Int8Array(areamap_demo.pixels);
 
 let largebg = new Image(resfolder + "/Loulou_UomoScreen.png");
 
+sprite_lr.drawoffsetx = 0.0;
+
 var charpos = { x: 50.0, y: 50.0, width: 64, height: 64, drawoffsetx: 0.0, drawoffsety: 0.0, isFlipped: false, 
     charsprite: sprite_lr,
     facing: 'r' }
@@ -284,7 +286,7 @@ Screen.display(() => {
             sprite.width = Math.abs(sprite.width);
             sprite.x = 0;
             //charpos.x -= sprite.width;
-            charpos.drawoffsetx = 0;
+            sprite.drawoffsetx = 0;
             charpos.isFlipped = false;
         } 
 
@@ -295,12 +297,12 @@ Screen.display(() => {
 
     if (p1Pad.pressed(Pads.LEFT)) {
         sprite = sprite_lr;
-        // if (!charpos.isFlipped) {
-        //     sprite.width = -Math.abs(sprite.width);
-        //     sprite.x = sprite.width;
-        //     charpos.drawoffsetx = -sprite.width;
-        //     charpos.isFlipped = true;
-        // } 
+        if (!charpos.isFlipped) {
+            sprite.width = -Math.abs(sprite.width);
+            sprite.x = sprite.width;
+            sprite.drawoffsetx = -sprite.width;
+            charpos.isFlipped = true;
+        } 
         charpos.facing = 'l';
         tryMoveChar_Continuous(charpos, { x: -5.09, y: 0.0 });
         //charpos.x = charpos.x - 5.09;
@@ -308,12 +310,12 @@ Screen.display(() => {
 
     if (p1Pad.pressed(Pads.UP)) {
         sprite = sprite_b;
-        if (charpos.isFlipped) {
-            sprite.width = Math.abs(sprite.width);
-            sprite.x = 0;
-            charpos.drawoffsetx = 0;
-            charpos.isFlipped = false; 
-        } 
+        // if (charpos.isFlipped) {
+        //     sprite.width = Math.abs(sprite.width);
+        //     sprite.x = 0;
+        //     charpos.drawoffsetx = 0;
+        //     charpos.isFlipped = false; 
+        // } 
         charpos.facing = 'b';
         tryMoveChar_Continuous(charpos, { x: 0.0, y: -5.09 });
         //charpos.y = charpos.y - 5.09;
@@ -321,19 +323,19 @@ Screen.display(() => {
 
     if (p1Pad.pressed(Pads.DOWN)) {
         sprite = sprite_f;
-        if (charpos.isFlipped) {
-            sprite.width = Math.abs(sprite.width);
-            sprite.x = 0;
-            charpos.drawoffsetx = 0;
-            charpos.isFlipped = false;
-        } 
+        // if (charpos.isFlipped) {
+        //     sprite.width = Math.abs(sprite.width);
+        //     sprite.x = 0;
+        //     charpos.drawoffsetx = 0;
+        //     charpos.isFlipped = false;
+        // } 
         charpos.facing = 'f';
         tryMoveChar_Continuous(charpos, { x: 0.0, y: 5.09 });
         //charpos.y = charpos.y + 5.09;
     }
    
     screen_640x448.draw(0.0, 0.0);//tile_dblue   screen_640x448
-    sprite.draw(charpos.x + charpos.drawoffsetx, charpos.y + charpos.drawoffsety);
+    sprite.draw(charpos.x + (sprite.drawoffsetx || 0.0), charpos.y + charpos.drawoffsety);
 
     charpos.charsprite = sprite;
     ////sprite.draw(charpos.x + 40, charpos.y);
