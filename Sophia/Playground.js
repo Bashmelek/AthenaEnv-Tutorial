@@ -23,9 +23,9 @@ os.chdir("Sophia");
 
 const tile_lightstone = new Image(resfolder + "/tiles_64lightstone.png");//tiles_64not   tiles_32lightstone
 //const sprite = new Image(resfolder + "/tiles_64not.png");
-const sprite_lr = new Image(resfolder + "/dogchar64_r.png");
-const sprite_f = new Image(resfolder + "/dogchar64_f.png");
-const sprite_b = new Image(resfolder + "/dogchar64_b.png");
+const sprite_lr = new Image(resfolder + "/dogchar64clear_r.png");
+const sprite_f = new Image(resfolder + "/dogchar64clear_f.png");
+const sprite_b = new Image(resfolder + "/dogchar64clear_b.png");
 const tile_dblue = new Image(resfolder + "/tiles_64darkerblue.png");
 
 
@@ -44,7 +44,7 @@ let blankscreen_pixels = new Int32Array(screen_640x448.pixels);
 
 const START_BMP24 = 54;
 
-let areamap_demo = std.open(resfolder + "/maparea_demo0.bmp", "r");// new Image("maparea_demo0.bmp");
+let areamap_demo = std.open(resfolder + "/maparea_advdemo0.bmp", "r");// new Image("maparea_demo0.bmp");
 
 var abmap = new ArrayBuffer(14 * 20 * 3 + START_BMP24);
 areamap_demo.read(abmap, 0, 14 * 20 * 3 - 0 + START_BMP24)
@@ -52,7 +52,7 @@ var bmap = new Uint8Array(abmap);
 let areamap_pixels = new Int8Array(areamap_demo.pixels);
 
 
-let largebg = new Image(resfolder + "/Loulou_UomoScreen.png");
+//let largebg = new Image(resfolder + "/Loulou_UomoScreen.png");
 
 sprite_lr.drawoffsetx = 0.0;
 
@@ -63,8 +63,8 @@ var charpos = { x: 50.0, y: 50.0, width: 64, height: 64, drawoffsetx: 0.0, drawo
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Screen.getMode(); 
 
 
-largebg.width = 640;
-largebg.height = 448;
+//largebg.width = 640;
+//largebg.height = 448;
 
 // tile_32.x = 0;
 // tile_32.y = 0;
@@ -275,7 +275,6 @@ Screen.display(() => {
     //}
 
 
-    font.print(10, 10, "Why dost thou continue?");    
     p1Pad.update();
 
     var sprite = charpos.charsprite;
@@ -336,6 +335,7 @@ Screen.display(() => {
    
     screen_640x448.draw(0.0, 0.0);//tile_dblue   screen_640x448
     sprite.draw(charpos.x + (sprite.drawoffsetx || 0.0), charpos.y + charpos.drawoffsety);
+    font.print(10, 10, "Why dost thou continue?");    
 
     charpos.charsprite = sprite;
     ////sprite.draw(charpos.x + 40, charpos.y);
