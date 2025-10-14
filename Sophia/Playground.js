@@ -22,7 +22,10 @@ const p2Pad = Pads.get(1);
 os.chdir("Sophia");
 
 const tile_lightstone = new Image(resfolder + "/tiles_64lightstone.png");//tiles_64not   tiles_32lightstone
-const sprite = new Image(resfolder + "/tiles_64not.png");
+//const sprite = new Image(resfolder + "/tiles_64not.png");
+const sprite_lr = new Image(resfolder + "/dogchar64_r.png");
+const sprite_f = new Image(resfolder + "/dogchar64_f.png");
+const sprite_b = new Image(resfolder + "/dogchar64_b.png");
 const tile_dblue = new Image(resfolder + "/tiles_64darkerblue.png");
 
 
@@ -51,7 +54,9 @@ let areamap_pixels = new Int8Array(areamap_demo.pixels);
 
 let largebg = new Image(resfolder + "/Loulou_UomoScreen.png");
 
-var charpos = { x: 50.0, y: 50.0, width: 64, height: 64, drawoffsetx: 0.0, drawoffsety: 0.0, isFlipped: false }
+var charpos = { x: 50.0, y: 50.0, width: 64, height: 64, drawoffsetx: 0.0, drawoffsety: 0.0, isFlipped: false, 
+    charsprite: sprite_lr,
+    facing: 'r' }
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Screen.getMode(); 
 
@@ -66,12 +71,26 @@ largebg.height = 448;
 // tile_32.width = 32;
 // tile_32.height = 32;
 
-sprite.x = 0;
-sprite.y = 0;
-sprite.endx = 64;
-sprite.endy = 64;
-sprite.width = 64;
-sprite.height = 64;
+sprite_lr.x = 0;
+sprite_lr.y = 0;
+sprite_lr.endx = 64;
+sprite_lr.endy = 64;
+sprite_lr.width = 64;
+sprite_lr.height = 64;
+
+sprite_b.x = 0;
+sprite_b.y = 0;
+sprite_b.endx = 64;
+sprite_b.endy = 64;
+sprite_b.width = 64;
+sprite_b.height = 64;
+
+sprite_f.x = 0;
+sprite_f.y = 0;
+sprite_f.endx = 64;
+sprite_f.endy = 64;
+sprite_f.width = 64;
+sprite_f.height = 64;
 
 tile_lightstone.width = 32;
 tile_lightstone.height = 32;
@@ -178,18 +197,12 @@ function SetBackGroundSprite_Static(){
 
             for(var bi = 0; bi < 32; bi++) {
                 var offsetbi = startbyte + (bi * 640);
-                var offsetsbi = bi * 64;// bi % 64 * 64;
+                var offsetsbi = bi << 6 ;//* 64;// bi % 64 * 64;
 
-                for(var bj = 0; bj < 32; bj+=4) {//32
+                for(var bj = 0; bj < 32; bj++) {//32
                     var b = offsetbi + bj;
                     var sb = (offsetsbi +  bj);//(bj % 64));
                     blankscreen_pixels[b] = currentSource[sb];
-                    blankscreen_pixels[b + 1] = currentSource[sb + 1];
-                    blankscreen_pixels[b + 2] = currentSource[sb + 2];
-                    blankscreen_pixels[b + 3] = currentSource[sb + 3];
-                    //blankscreen_pixels[b + 1] = currentSource[sb + 1];
-                    //blankscreen_pixels[b + 2] = currentSource[sb + 2];
-                    //blankscreen_pixels[b + 3] = currentSource[sb + 3];
                 }
             }
 
@@ -263,7 +276,10 @@ Screen.display(() => {
     font.print(10, 10, "Why dost thou continue?");    
     p1Pad.update();
 
+    var sprite = charpos.charsprite;
+
     if (p1Pad.pressed(Pads.RIGHT)) {
+        sprite = sprite_lr;
         if (charpos.isFlipped) {
             sprite.width = Math.abs(sprite.width);
             sprite.x = 0;
@@ -272,33 +288,54 @@ Screen.display(() => {
             charpos.isFlipped = false;
         } 
 
+        charpos.facing = 'r';
         tryMoveChar_Continuous(charpos, { x: 5.09, y: 0.0 });
         //charpos.x = charpos.x + 5.09;
     }
 
     if (p1Pad.pressed(Pads.LEFT)) {
-        if (!charpos.isFlipped) {
-            sprite.width = -Math.abs(sprite.width);
-            sprite.x = sprite.width;
-            charpos.drawoffsetx = -sprite.width;
-            charpos.isFlipped = true;
-        } 
+        sprite = sprite_lr;
+        // if (!charpos.isFlipped) {
+        //     sprite.width = -Math.abs(sprite.width);
+        //     sprite.x = sprite.width;
+        //     charpos.drawoffsetx = -sprite.width;
+        //     charpos.isFlipped = true;
+        // } 
+        charpos.facing = 'l';
         tryMoveChar_Continuous(charpos, { x: -5.09, y: 0.0 });
         //charpos.x = charpos.x - 5.09;
     }
 
     if (p1Pad.pressed(Pads.UP)) {
+        sprite = sprite_b;
+        if (charpos.isFlipped) {
+            sprite.width = Math.abs(sprite.width);
+            sprite.x = 0;
+            charpos.drawoffsetx = 0;
+            charpos.isFlipped = false; 
+        } 
+        charpos.facing = 'b';
         tryMoveChar_Continuous(charpos, { x: 0.0, y: -5.09 });
         //charpos.y = charpos.y - 5.09;
     }
 
     if (p1Pad.pressed(Pads.DOWN)) {
+        sprite = sprite_f;
+        if (charpos.isFlipped) {
+            sprite.width = Math.abs(sprite.width);
+            sprite.x = 0;
+            charpos.drawoffsetx = 0;
+            charpos.isFlipped = false;
+        } 
+        charpos.facing = 'f';
         tryMoveChar_Continuous(charpos, { x: 0.0, y: 5.09 });
         //charpos.y = charpos.y + 5.09;
     }
    
     screen_640x448.draw(0.0, 0.0);//tile_dblue   screen_640x448
     sprite.draw(charpos.x + charpos.drawoffsetx, charpos.y + charpos.drawoffsety);
+
+    charpos.charsprite = sprite;
     ////sprite.draw(charpos.x + 40, charpos.y);
     ////blank_128.draw(20.0, 20.0)
 });
