@@ -28,6 +28,9 @@ const sprite_f = new Image(resfolder + "/dogchar64clear_f.png");
 const sprite_b = new Image(resfolder + "/dogchar64clear_b.png");
 const tile_dblue = new Image(resfolder + "/tiles_64darkerblue.png");
 
+const mapobjSprites = {
+    doorkey: new Image(resfolder + "/doorkey32.png")
+};
 
 //const tile_32 = new Image(resfolder + "/tiles_64not.png");
 
@@ -58,7 +61,9 @@ sprite_lr.drawoffsetx = 0.0;
 
 var charpos = { x: 50.0, y: 50.0, width: 64, height: 64, drawoffsetx: 0.0, drawoffsety: 0.0, isFlipped: false, 
     charsprite: sprite_lr,
-    facing: 'r' }
+    facing: 'r' };
+
+var mapobjects = new Array();
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Screen.getMode(); 
 
@@ -99,6 +104,39 @@ tile_lightstone.height = 32;
 tile_dblue.width = 32;
 tile_dblue.height = 32;
 
+var level_0_pathedSpecials = {
+
+    1: { code: 'doorkey' },
+    2: { code: 'eedoor_e' },
+    3: { code: 'eedoor_n' },
+    4: { code: 'chest_w', id: 0 },
+    5: { code: 'chest_n', id: 1 },
+    6: { code: 'enterzone', id: 0 },
+    7: { code: 'exitzone', id: 0 }
+
+};
+
+function createMapObject(numcode, level, x, y) {
+
+    var ref = level_0_pathedSpecials[numcode];
+    std.printf("\n" + numcode + "\n");
+    std.printf("\n" + ref + "\n");
+    std.printf("\n" + ref.code + "\n");
+
+    var newobj = {};
+    if(ref.code == 'doorkey') {
+        newobj.code = ref.code;
+        newobj.sprite = mapobjSprites.doorkey
+        newobj.x = x;
+        newobj.y = y;
+        newobj.width = 32;
+        newobj.height = 32;
+    }
+
+    mapobjects.push(newobj);
+}
+
+
 function tryMoveChar_Continuous(cpos, vec) {
     std.printf("\n");
 
@@ -117,9 +155,9 @@ function tryMoveChar_Continuous(cpos, vec) {
     var nty = cpos.y + vec.y;
     var nby = cpos.y + cpos.height + vec.y;
 
-    var newleftx = Math.floor((cpos.x + vec.x) / 32);
+    var newleftx = Math.floor(Math.ceil(cpos.x + vec.x) / 32);
     var newrightx = Math.floor((cpos.x + cpos.width + vec.x) / 32);
-    var newtopy = Math.floor((cpos.y + vec.y) / 32);//Math.floor(Math.floor((cpos.y + dir.y) / 32) / 20);
+    var newtopy = Math.floor(Math.ceil(cpos.y + vec.y) / 32);//Math.floor(Math.floor((cpos.y + dir.y) / 32) / 20);
     var newboty = Math.floor((cpos.y + cpos.height + vec.y) / 32);//Math.floor(Math.floor((cpos.y + cpos.height + dir.y) / 32) / 20);
 
     std.printf(newleftx + "-" + newrightx + ", " + newtopy + "-" + newboty);
@@ -132,27 +170,27 @@ function tryMoveChar_Continuous(cpos, vec) {
 
             if(bmap[p + 0] == 0 || i < 0 || j < 0 || i > 19 || j > 13) {
 
-                if(nlx < (i + 1.0) * 32.0 && olx >= ((i + 1.0) * 32.0) - 0.02){//from right
-                    //std.printf(" a ");
+                if(nlx + 0.02 < (i + 1.0) * 32.0 && olx >= ((i + 1.0) * 32.0) + 0.02){//from right
+                    std.printf(" a ");
                     //std.printf(" a ");
                     //std.printf(olx);
                     //std.printf(" , ");
                     //std.printf((i + 1.0) * 32.0);
 
                     vec.x = ((i + 1.0) * 32.0) - olx + 0.02;
-                } else if(nrx > (i * 32.0) && orx <= (i * 32.0) + 0.02) {//from left
-                    //std.printf(" b ");
+                } else if(nrx - 0.02 > (i * 32.0) && orx <= (i * 32.0) - 0.02) {//from left
+                    std.printf(" b ");
                     //std.printf(orx);
                     //std.printf(" , ");
                     //std.printf((i * 32.0));
                     vec.x = (i * 32.0) - orx - 0.02;
-                } else if(nty < (j + 1.0) * 32.0 && oty >= ((j + 1.0) * 32.0) - 0.02){// 
+                } else if(nty + 0.02 < (j + 1.0) * 32.0 && oty >= ((j + 1.0) * 32.0) + 0.02){// 
                     
-                    //std.printf(" c ");
+                    std.printf(" c ");
                     vec.y = ((j + 1.0) * 32.0) - oty + 0.02;
-                } else if(nby > (j * 32.0) && oby <= (j * 32.0) + 0.02) {// 
+                } else if(nby - 0.02 > (j * 32.0) && oby <= (j * 32.0) - 0.02) {// 
                     
-                    //std.printf(" d ");
+                    std.printf(" d ");
                     //std.printf((j * 32.0));
                     vec.y = (j * 32.0) - oby - 0.02;
                 } else {
@@ -171,7 +209,25 @@ function tryMoveChar_Continuous(cpos, vec) {
 
 }
 
-function SetBackGroundSprite_Static(){
+function checkObectCollisions() {
+    var idsToDelete = new Array();
+    for(let c = 0; c < mapobjects.length; c++) {
+        var mo = mapobjects[c];
+        //if( Math.abs(charpos.x + charpos.width / 2.0 - (mo.x + mo.width / 2.0)) < Math.abs(mo.width / 2.0 + charpos.width / 2.0))
+        if( charpos.x + 0.01 < mo.x + mo.width && charpos.x + charpos.width > mo.x + 0.01) {
+            if( charpos.y + 0.01 < mo.y + mo.height && charpos.y + charpos.height > mo.y + 0.01) {
+                idsToDelete.push(c);    
+                std.printf(" \n picked up " + c);
+            }
+        }
+    }
+
+    for(let d = 0; d < idsToDelete.length; d++) {
+        mapobjects.splice(idsToDelete[d], 1);
+    }
+}
+
+function SetupLevelFromImage_Static(){
 
 //
 
@@ -179,6 +235,8 @@ function SetBackGroundSprite_Static(){
     //let work_pixels = new Int8Array(work_640x448.pixels);
     let tile_dblue_pixels = new Int32Array(tile_dblue.pixels);// BigInt64Array   Int32Array
     let tile_lightstone_pixels = new Int32Array(tile_lightstone.pixels);//
+
+    var levelid = 0;
  
     std.printf("\n\nHEYEYE HEY " + blankscreen_pixels.length + "\n\n");
 
@@ -193,6 +251,12 @@ function SetBackGroundSprite_Static(){
             }
             if (bmap[p + 0] == 255) { //-1
                 currentSource = tile_lightstone_pixels;
+
+                if(bmap[p + 2] > 0){
+                    // var newmapojb = {};
+                    // mapobjects.push(newmapojb);
+                    createMapObject(bmap[p + 2], levelid, ti * 32, tj * 32);
+                }
             } 
 
             var startbyte = tj * 32 * 640 + ti * 32;//tj * 32 * 640 * 4 + ti * 32 * 4;
@@ -200,8 +264,9 @@ function SetBackGroundSprite_Static(){
             for(var bi = 0; bi < 32; bi++) {
                 var offsetbi = startbyte + (bi * 640);
                 var offsetsbi = bi << 6 ;//* 64;// bi % 64 * 64;
-
-                for(var bj = 0; bj < 32; bj++) {//32
+                
+                //var bj = 32;
+                for(var bj = 0; bj < 32; bj++) { // while(bj--) {//32    for(var bj = 0; bj < 32; bj++) { //
                     var b = offsetbi + bj;
                     var sb = (offsetsbi +  bj);//(bj % 64));
                     blankscreen_pixels[b] = currentSource[sb];
@@ -231,7 +296,7 @@ function SetBackGroundSprite_Static(){
 }
 
 //setup bg
-SetBackGroundSprite_Static();
+SetupLevelFromImage_Static();
 
 Screen.display(() => {
    //if (timer.get() > frameDuration) {
@@ -332,8 +397,16 @@ Screen.display(() => {
         tryMoveChar_Continuous(charpos, { x: 0.0, y: 5.09 });
         //charpos.y = charpos.y + 5.09;
     }
+
+    checkObectCollisions();
    
     screen_640x448.draw(0.0, 0.0);//tile_dblue   screen_640x448
+
+    for(let c = 0; c < mapobjects.length; c++) {
+        var mo = mapobjects[c];
+        mapobjects[c].sprite.draw(mo.x, mo.y);
+    }
+
     sprite.draw(charpos.x + (sprite.drawoffsetx || 0.0), charpos.y + charpos.drawoffsety);
     font.print(10, 10, "Why dost thou continue?");    
 
