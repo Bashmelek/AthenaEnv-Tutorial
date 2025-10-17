@@ -216,21 +216,21 @@ function tryMoveChar_CSRR(cpos, vec, level) {
         return;
     }
 
-    var adjustedDest = { x: cpos.x + vec.x, y: cpos.y + vec.y }
-    if(vec.x > 0) {
-        adjustedDest.x = Math.floor(adjustedDest.x);
-    }
-    else if(vec.x < 0){
-        adjustedDest.x = Math.ceil(adjustedDest.x);
-    }
-    if(vec.y > 0) {
-        adjustedDest.y = Math.floor(adjustedDest.y);
-    }
-    else if(vec.y < 0){
-        adjustedDest.y = Math.ceil(adjustedDest.y);
-    }
-    vec.x = adjustedDest.x - cpos.x;
-    vec.y = adjustedDest.y - cpos.y;
+    // var adjustedDest = { x: cpos.x + vec.x, y: cpos.y + vec.y }
+    // if(vec.x > 0) {
+    //     adjustedDest.x = Math.floor(adjustedDest.x);
+    // }
+    // else if(vec.x < 0){
+    //     adjustedDest.x = Math.ceil(adjustedDest.x);
+    // }
+    // if(vec.y > 0) {
+    //     adjustedDest.y = Math.floor(adjustedDest.y);
+    // }
+    // else if(vec.y < 0){
+    //     adjustedDest.y = Math.ceil(adjustedDest.y);
+    // }
+    // vec.x = adjustedDest.x - cpos.x;
+    // vec.y = adjustedDest.y - cpos.y;
 
     var ovec = { x: vec.x, y: vec.y };
     var hasHit = false;
@@ -239,14 +239,18 @@ function tryMoveChar_CSRR(cpos, vec, level) {
     //var slope = vec.y / vec.x;
 
     //find range of cells to track
+
+    var cheight = cpos.height - 0.2;
+    var cwidth = cpos.width - 0.2;
+
     var olx = cpos.x;
     var orx = cpos.x + cpos.width;
     var oty = cpos.y;
     var oby = cpos.y + cpos.height;
 
-    var nlx = Math.ceil(cpos.x + vec.x);
+    var nlx = (cpos.x + vec.x);
     var nrx = cpos.x + cpos.width + vec.x;
-    var nty = Math.ceil(cpos.y + vec.y);
+    var nty = (cpos.y + vec.y);
     var nby = cpos.y + cpos.height + vec.y;
 
     var newleftx = Math.floor((cpos.x + vec.x) / 32);
@@ -256,8 +260,10 @@ function tryMoveChar_CSRR(cpos, vec, level) {
 
     std.printf(newleftx + "-" + newrightx + ", " + newtopy + "-" + newboty + 'absolute: ' + cpos.x + ' ' + cpos.y);
 
-    for(var i = newleftx; i <= newrightx; i++) {
-        for(var j = newtopy; j <= newboty; j++) {
+    var istart = ovec.x < 0 ? newrightx : newleftx;
+    var i_inc = ovec.x < 0 ? -1 : 1;
+    for(var i = istart; i >= newleftx && i <= newrightx; i += i_inc) { // (var i = newleftx; i <= newrightx; i++)
+        for(var j = newtopy; j <= newboty; j++) { //
             var p = START_BMP24 + ((14 - 1 - j) * 20 * 3) + i * 3;
             
             //std.printf(" at pixel: " + p);//54 + i * 3 + 20 * 3(14 - 1 - j)    
@@ -363,21 +369,21 @@ function tryMoveChar_CSRR(cpos, vec, level) {
         }
     }
 
-    var eadjustedDest = { x: cpos.x + vec.x, y: cpos.y + vec.y }
-    if(ovec.x > 0) {
-        eadjustedDest.x = Math.floor(eadjustedDest.x);
-    }
-    else if(ovec.x < 0){
-        eadjustedDest.x = Math.ceil(eadjustedDest.x);
-    }
-    if(ovec.y > 0) {
-        eadjustedDest.y = Math.floor(eadjustedDest.y);
-    }
-    else if(ovec.y < 0){
-        eadjustedDest.y = Math.ceil(eadjustedDest.y);
-    }
-    vec.x = eadjustedDest.x - cpos.x;
-    vec.y = eadjustedDest.y - cpos.y;
+    // var eadjustedDest = { x: cpos.x + vec.x, y: cpos.y + vec.y }
+    // if(ovec.x > 0) {
+    //     eadjustedDest.x = Math.floor(eadjustedDest.x);
+    // }
+    // else if(ovec.x < 0){
+    //     eadjustedDest.x = Math.ceil(eadjustedDest.x);
+    // }
+    // if(ovec.y > 0) {
+    //     eadjustedDest.y = Math.floor(eadjustedDest.y);
+    // }
+    // else if(ovec.y < 0){
+    //     eadjustedDest.y = Math.ceil(eadjustedDest.y);
+    // }
+    // vec.x = eadjustedDest.x - cpos.x;
+    // vec.y = eadjustedDest.y - cpos.y;
 
     std.printf("\n" + vec.x + ' ' + vec.y);
     cpos.x += vec.x;
