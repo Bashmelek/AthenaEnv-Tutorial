@@ -244,19 +244,19 @@ function tryMoveChar_CSRR(cpos, vec, level) {
     var cwidth = cpos.width - 0.2;
 
     var olx = cpos.x;
-    var orx = cpos.x + cpos.width;
+    var orx = cpos.x + cwidth;
     var oty = cpos.y;
-    var oby = cpos.y + cpos.height;
+    var oby = cpos.y + cheight;
 
     var nlx = (cpos.x + vec.x);
-    var nrx = cpos.x + cpos.width + vec.x;
+    var nrx = cpos.x + cwidth + vec.x;
     var nty = (cpos.y + vec.y);
-    var nby = cpos.y + cpos.height + vec.y;
+    var nby = cpos.y + cheight + vec.y;
 
     var newleftx = Math.floor((cpos.x + vec.x) / 32);
-    var newrightx = Math.floor((cpos.x + cpos.width + vec.x) / 32);
+    var newrightx = Math.floor((cpos.x + cwidth + vec.x) / 32);
     var newtopy = Math.floor((cpos.y + vec.y) / 32);//Math.floor(Math.floor((cpos.y + dir.y) / 32) / 20);
-    var newboty = Math.floor((cpos.y + cpos.height + vec.y) / 32);//Math.floor(Math.floor((cpos.y + cpos.height + dir.y) / 32) / 20);
+    var newboty = Math.floor((cpos.y + cheight + vec.y) / 32);//Math.floor(Math.floor((cpos.y + cpos.height + dir.y) / 32) / 20);
 
     std.printf(newleftx + "-" + newrightx + ", " + newtopy + "-" + newboty + 'absolute: ' + cpos.x + ' ' + cpos.y);
 
@@ -283,9 +283,9 @@ function tryMoveChar_CSRR(cpos, vec, level) {
                     vec.y = ratio * ovec.y;// y traveled at collision
 
                     nlx = (cpos.x + vec.x);
-                    nrx = cpos.x + cpos.width + vec.x;
+                    nrx = cpos.x + cwidth + vec.x;
                     nty = (cpos.y + vec.y);
-                    nby = cpos.y + cpos.height + vec.y;
+                    nby = cpos.y + cheight + vec.y;
 
                     afterResVec.x = 0.0;
                     afterResVec.y = ovec.y - vec.y; //amount of y left
@@ -301,9 +301,9 @@ function tryMoveChar_CSRR(cpos, vec, level) {
                     vec.y = ratio * ovec.y;// y traveled at collision
 
                     nlx = (cpos.x + vec.x);
-                    nrx = cpos.x + cpos.width + vec.x;
+                    nrx = cpos.x + cwidth + vec.x;
                     nty = (cpos.y + vec.y);
-                    nby = cpos.y + cpos.height + vec.y;
+                    nby = cpos.y + cheight + vec.y;
                     
                     afterResVec.x = 0.0;
                     afterResVec.y = ovec.y - vec.y; //amount of y left
@@ -320,9 +320,9 @@ function tryMoveChar_CSRR(cpos, vec, level) {
                     vec.x = ratio * ovec.x;// y traveled at collision
 
                     nlx = (cpos.x + vec.x);
-                    nrx = cpos.x + cpos.width + vec.x;
+                    nrx = cpos.x + cwidth + vec.x;
                     nty = (cpos.y + vec.y);
-                    nby = cpos.y + cpos.height + vec.y;
+                    nby = cpos.y + cheight + vec.y;
 
                     afterResVec.y = 0.0;
                     afterResVec.x = ovec.x - vec.x;
@@ -339,9 +339,9 @@ function tryMoveChar_CSRR(cpos, vec, level) {
                     vec.x = ratio * ovec.x;// y traveled at collision
 
                     nlx = (cpos.x + vec.x);
-                    nrx = cpos.x + cpos.width + vec.x;
+                    nrx = cpos.x + cwidth + vec.x;
                     nty = (cpos.y + vec.y);
-                    nby = cpos.y + cpos.height + vec.y;
+                    nby = cpos.y + cheight + vec.y;
 
                     afterResVec.y = 0.0;
                     afterResVec.x = ovec.x - vec.x;
