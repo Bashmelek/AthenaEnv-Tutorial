@@ -209,6 +209,186 @@ function tryMoveChar_Continuous(cpos, vec) {
 
 }
 
+//Continuous Single Resolved Rounded...
+function tryMoveChar_CSRR(cpos, vec, level) {
+    std.printf("\n");
+    if(level < 0) {
+        return;
+    }
+
+    var adjustedDest = { x: cpos.x + vec.x, y: cpos.y + vec.y }
+    if(vec.x > 0) {
+        adjustedDest.x = Math.floor(adjustedDest.x);
+    }
+    else if(vec.x < 0){
+        adjustedDest.x = Math.ceil(adjustedDest.x);
+    }
+    if(vec.y > 0) {
+        adjustedDest.y = Math.floor(adjustedDest.y);
+    }
+    else if(vec.y < 0){
+        adjustedDest.y = Math.ceil(adjustedDest.y);
+    }
+    vec.x = adjustedDest.x - cpos.x;
+    vec.y = adjustedDest.y - cpos.y;
+
+    var ovec = { x: vec.x, y: vec.y };
+    var hasHit = false;
+    var afterResVec = { x: 0.0, y: 0.0 };
+
+    //var slope = vec.y / vec.x;
+
+    //find range of cells to track
+    var olx = cpos.x;
+    var orx = cpos.x + cpos.width;
+    var oty = cpos.y;
+    var oby = cpos.y + cpos.height;
+
+    var nlx = Math.ceil(cpos.x + vec.x);
+    var nrx = cpos.x + cpos.width + vec.x;
+    var nty = Math.ceil(cpos.y + vec.y);
+    var nby = cpos.y + cpos.height + vec.y;
+
+    var newleftx = Math.floor((cpos.x + vec.x) / 32);
+    var newrightx = Math.floor((cpos.x + cpos.width + vec.x) / 32);
+    var newtopy = Math.floor((cpos.y + vec.y) / 32);//Math.floor(Math.floor((cpos.y + dir.y) / 32) / 20);
+    var newboty = Math.floor((cpos.y + cpos.height + vec.y) / 32);//Math.floor(Math.floor((cpos.y + cpos.height + dir.y) / 32) / 20);
+
+    std.printf(newleftx + "-" + newrightx + ", " + newtopy + "-" + newboty + 'absolute: ' + cpos.x + ' ' + cpos.y);
+
+    for(var i = newleftx; i <= newrightx; i++) {
+        for(var j = newtopy; j <= newboty; j++) {
+            var p = START_BMP24 + ((14 - 1 - j) * 20 * 3) + i * 3;
+            
+            //std.printf(" at pixel: " + p);//54 + i * 3 + 20 * 3(14 - 1 - j)    
+
+            if(bmap[p + 0] == 0 || i < 0 || j < 0 || i > 19 || j > 13) {
+
+                var loophit = false;
+
+                if(nlx < (i + 1.0) * 32.0 && olx >= ((i + 1.0) * 32.0)){//from right
+                    std.printf(" a ");
+                    loophit = true;
+                    
+                    hasHit = true;
+                    vec.x = ((i + 1.0) * 32.0) - olx + 0.04;
+                    
+                    var ratio = ovec.x != 0 ? vec.x / ovec.x : 0.0;
+                    vec.y = ratio * ovec.y;// y traveled at collision
+
+                    nlx = (cpos.x + vec.x);
+                    nrx = cpos.x + cpos.width + vec.x;
+                    nty = (cpos.y + vec.y);
+                    nby = cpos.y + cpos.height + vec.y;
+
+                    afterResVec.x = 0.0;
+                    afterResVec.y = ovec.y - vec.y; //amount of y left
+                } 
+                if(nrx > (i * 32.0) && orx <= (i * 32.0)) {//from left
+                    std.printf(" b ");
+                    loophit = true;
+
+                    hasHit = true;
+                    vec.x = (i * 32.0) - orx - 0.04;
+                    
+                    var ratio = ovec.x != 0 ? vec.x / ovec.x : 0.0;
+                    vec.y = ratio * ovec.y;// y traveled at collision
+
+                    nlx = (cpos.x + vec.x);
+                    nrx = cpos.x + cpos.width + vec.x;
+                    nty = (cpos.y + vec.y);
+                    nby = cpos.y + cpos.height + vec.y;
+                    
+                    afterResVec.x = 0.0;
+                    afterResVec.y = ovec.y - vec.y; //amount of y left
+                }  
+                if(nty < (j + 1.0) * 32.0 && oty >= ((j + 1.0) * 32.0) ){// 
+                    
+                    std.printf(" c ");
+                    loophit = true;
+                    
+                    hasHit = true;
+                    vec.y = ((j + 1.0) * 32.0) - oty + 0.04;
+                    
+                    var ratio = ovec.y != 0 ? vec.y / ovec.y : 0.0;
+                    vec.x = ratio * ovec.x;// y traveled at collision
+
+                    nlx = (cpos.x + vec.x);
+                    nrx = cpos.x + cpos.width + vec.x;
+                    nty = (cpos.y + vec.y);
+                    nby = cpos.y + cpos.height + vec.y;
+
+                    afterResVec.y = 0.0;
+                    afterResVec.x = ovec.x - vec.x;
+                } 
+                if(nby > (j * 32.0) && oby <= (j * 32.0)) {// 
+                    
+                    std.printf(" d ");
+                    loophit = true;
+                    
+                    hasHit = true;
+                    vec.y = (j * 32.0) - oby - 0.04;
+                    
+                    var ratio = ovec.y != 0 ? vec.y / ovec.y : 0.0;
+                    vec.x = ratio * ovec.x;// y traveled at collision
+
+                    nlx = (cpos.x + vec.x);
+                    nrx = cpos.x + cpos.width + vec.x;
+                    nty = (cpos.y + vec.y);
+                    nby = cpos.y + cpos.height + vec.y;
+
+                    afterResVec.y = 0.0;
+                    afterResVec.x = ovec.x - vec.x;
+                } 
+                
+                if(!loophit)
+                {
+                    
+                    if(nlx + 0.02 < (i + 1.0) * 32.0 &&
+                            nrx - 0.02 > (i * 32.0) &&
+                            nty + 0.02 < (j + 1.0) * 32.0 &&
+                            nby - 0.02 > (j * 32.0)) {
+                        hasHit = true;
+                        std.printf(" ee " + i + ',' + j + ' ' + level + ' in ' + nlx + ' ' + nty);
+                        vec.x = 0.0;
+                        vec.y = 0.0;
+                        
+                        afterResVec.y = 0.0;
+                        afterResVec.x = 0.0;
+                    }
+                }
+
+                std.printf(" < hit at level " + level + '  ' + vec.x + ' ' + vec.y + '   ');
+            }
+        }
+    }
+
+    var eadjustedDest = { x: cpos.x + vec.x, y: cpos.y + vec.y }
+    if(ovec.x > 0) {
+        eadjustedDest.x = Math.floor(eadjustedDest.x);
+    }
+    else if(ovec.x < 0){
+        eadjustedDest.x = Math.ceil(eadjustedDest.x);
+    }
+    if(ovec.y > 0) {
+        eadjustedDest.y = Math.floor(eadjustedDest.y);
+    }
+    else if(ovec.y < 0){
+        eadjustedDest.y = Math.ceil(eadjustedDest.y);
+    }
+    vec.x = eadjustedDest.x - cpos.x;
+    vec.y = eadjustedDest.y - cpos.y;
+
+    std.printf("\n" + vec.x + ' ' + vec.y);
+    cpos.x += vec.x;
+    cpos.y += vec.y;
+
+    if(hasHit && (afterResVec.x != 0.0 || afterResVec.y != 0.0)){
+        tryMoveChar_CSRR(cpos, afterResVec, level - 1);
+    }
+
+}
+
 function checkObectCollisions() {
     var idsToDelete = new Array();
     for(let c = 0; c < mapobjects.length; c++) {
@@ -277,22 +457,6 @@ function SetupLevelFromImage_Static(){
     }
 
 
-    // const blank_128 = new Image(resfolder + "/blankred_128.png");// blankred_64 
-    // let blank128_pixels = new Int8Array(blank_128.pixels);
-    // let tile_dblue_pixels = new Int8Array(sprite.pixels);
-
-    // std.printf("\n\nHEYEYE HEY" + blank128_pixels.length + "\n\n");
-
-    // for(var bi = 0; bi < 128; bi++) {
-    //     for(var bj = 0; bj < 128; bj++) {
-    //         var sx = bi % 64;
-    //         var xy = bj % 64;
-    //         blank128_pixels[(bi * 128 + bj)* 4 + 0] = tile_dblue_pixels[(bi % 64 * 64 + (bj % 64)) * 4 + 0];
-    //         blank128_pixels[(bi * 128 + bj)* 4 + 1] = tile_dblue_pixels[(bi % 64 * 64 + (bj % 64)) * 4 + 1];
-    //         blank128_pixels[(bi * 128 + bj)* 4 + 2] = tile_dblue_pixels[(bi % 64 * 64 + (bj % 64)) * 4 + 2];
-    //         blank128_pixels[(bi * 128 + bj) * 4 + 3] = tile_dblue_pixels[(bi % 64 * 64 + (bj % 64)) * 4 + 3];
-    //     }
-    // }
 }
 
 //setup bg
@@ -344,6 +508,8 @@ Screen.display(() => {
 
     var sprite = charpos.charsprite;
 
+    var movevec = { x: 0.0, y: 0.0 };
+
     if (p1Pad.pressed(Pads.RIGHT)) {
         sprite = sprite_lr;
         if (charpos.isFlipped) {
@@ -355,8 +521,8 @@ Screen.display(() => {
         } 
 
         charpos.facing = 'r';
-        tryMoveChar_Continuous(charpos, { x: 5.09, y: 0.0 });
-        //charpos.x = charpos.x + 5.09;
+        //tryMoveChar_Continuous(charpos, { x: 5.09, y: 0.0 });
+        movevec.x = 5.09;
     }
 
     if (p1Pad.pressed(Pads.LEFT)) {
@@ -368,8 +534,8 @@ Screen.display(() => {
             charpos.isFlipped = true;
         } 
         charpos.facing = 'l';
-        tryMoveChar_Continuous(charpos, { x: -5.09, y: 0.0 });
-        //charpos.x = charpos.x - 5.09;
+        //tryMoveChar_Continuous(charpos, { x: -5.09, y: 0.0 });
+        movevec.x = -5.09;
     }
 
     if (p1Pad.pressed(Pads.UP)) {
@@ -381,8 +547,8 @@ Screen.display(() => {
         //     charpos.isFlipped = false; 
         // } 
         charpos.facing = 'b';
-        tryMoveChar_Continuous(charpos, { x: 0.0, y: -5.09 });
-        //charpos.y = charpos.y - 5.09;
+        //tryMoveChar_Continuous(charpos, { x: 0.0, y: -5.09 });
+        movevec.y = -5.09;
     }
 
     if (p1Pad.pressed(Pads.DOWN)) {
@@ -394,8 +560,12 @@ Screen.display(() => {
         //     charpos.isFlipped = false;
         // } 
         charpos.facing = 'f';
-        tryMoveChar_Continuous(charpos, { x: 0.0, y: 5.09 });
-        //charpos.y = charpos.y + 5.09;
+        //tryMoveChar_Continuous(charpos, { x: 0.0, y: 5.09 });
+        movevec.y = 5.09;
+    }
+
+    if(movevec.x != 0.0 || movevec.y != 0.0) {
+        tryMoveChar_CSRR(charpos, movevec, 3)
     }
 
     checkObectCollisions();
