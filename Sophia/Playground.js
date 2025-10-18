@@ -260,7 +260,7 @@ function tryMoveChar_CSRR(cpos, vec, level) {
     var newtopy = Math.floor((cpos.y + vec.y) / 32);//Math.floor(Math.floor((cpos.y + dir.y) / 32) / 20);
     var newboty = Math.floor((cpos.y + cheight + vec.y) / 32);//Math.floor(Math.floor((cpos.y + cpos.height + dir.y) / 32) / 20);
 
-    std.printf(newleftx + "-" + newrightx + ", " + newtopy + "-" + newboty + 'absolute: ' + cpos.x + ' ' + cpos.y);
+    std.printf('lev ' + level + '  ' + newleftx + "-" + newrightx + ", " + newtopy + "-" + newboty + 'absolute: ' + cpos.x + ' ' + cpos.y);
 
     var istart = ovec.x < 0 ? newrightx : newleftx;
     var i_inc = ovec.x < 0 ? -1 : 1;
@@ -284,6 +284,53 @@ function tryMoveChar_CSRR(cpos, vec, level) {
                     var edgeDist = (nty - edgecenter.y) * (nty - edgecenter.y) + (nrx - edgecenter.x) * (nrx - edgecenter.x);
                     ignoreHit = edgeDist > (edgeRadius * edgeRadius);
                     std.printf(" n ");
+                    if(!ignoreHit){
+                        std.printf(" nside ");
+
+                        var newEdgeDst = {};
+
+                        var evec = { x: ovec.x, y: ovec.y };
+                        var veclen = Math.sqrt(evec.x * evec.x + evec.y * evec.y);
+                        var realEdgeDist = Math.sqrt(edgeDist);
+                        var eincursion = edgeRadius - realEdgeDist;//
+                        var eratio = (veclen - eincursion) / veclen;
+                        eratio -= 0.02;//just for rounding
+                        evec.x = evec.x * eratio;
+                        evec.y = evec.y * eratio;
+                        std.printf(eratio + ":" + evec.x + "," + evec.y);
+
+                        if(cpos.y + evec.y < ((j + 1.0) * 32.0 - edgeRadius) || cpos.x + evec.x > (i * 32.0) + edgeRadius) {
+                            ignoreHit = false
+                        } else {
+                            var edgeToCornerCenter = {}
+                            edgeToCornerCenter.x = ((i * 32.0) + edgeRadius) - (cpos.x + cwidth + evec.x);
+                            edgeToCornerCenter.y = ((j + 1.0) * 32.0 - edgeRadius) - (cpos.y + evec.y);
+                            var incursionVect = {};
+                            incursionVect.x = ovec.x - evec.x;
+                            incursionVect.y = ovec.y - evec.y;
+
+                            var dot = edgeToCornerCenter.x * incursionVect.x + edgeToCornerCenter.y * incursionVect.y;
+                            var proj = { x: (edgeToCornerCenter.x * dot) / (edgeRadius * edgeRadius), y: (edgeToCornerCenter.y * dot) / (edgeRadius * edgeRadius) };
+                            var comp = { x: incursionVect.x - proj.x, y: incursionVect.y - proj.y };
+                            
+                            loophit = true;
+                    
+                            hasHit = true;
+                            vec.x = evec.x;
+                            vec.y = evec.y;
+
+                            nlx = (cpos.x + vec.x);
+                            nrx = cpos.x + cwidth + vec.x;
+                            nty = (cpos.y + vec.y);
+                            nby = cpos.y + cheight + vec.y;
+
+                            afterResVec.y = comp.y;
+                            afterResVec.x = comp.x;
+                            
+                            std.printf(" nresolve " + comp.x + ',' + comp.y);
+                        }
+
+                    }
                 }
                 if(nty > (j + 1.0) * 32.0 - edgeRadius && nlx > (i + 1.0) * 32.0 - edgeRadius){//your topleft
                     var edgecenter = {};
@@ -315,6 +362,10 @@ function tryMoveChar_CSRR(cpos, vec, level) {
 
                 if(ignoreHit) {
                     std.printf("<edge ");
+                    continue;
+                }
+                if(loophit) {
+                    std.printf("<slide ");
                     continue;
                 }
 
