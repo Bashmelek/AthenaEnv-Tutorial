@@ -274,9 +274,10 @@ function tryMoveChar_CSRR(cpos, vec, level) {
 
                 var loophit = false;
 
-                var ignoreHit = false
-
-                if(nty > (j + 1.0) * 32.0 - edgeRadius && nrx < (i * 32.0) + edgeRadius){//your topright
+                var ignoreHit = false;
+                
+                
+                if(j < 13 && bmap[START_BMP24 + ((14 - 2 - j) * 20 * 3) + i * 3] != 0 && nty > (j + 1.0) * 32.0 - edgeRadius && nrx < (i * 32.0) + edgeRadius){//your topright
                     var edgecenter = {};
                     edgecenter.x = (i * 32.0) + edgeRadius;
                     edgecenter.y = (j + 1.0) * 32.0 - edgeRadius;
@@ -297,14 +298,17 @@ function tryMoveChar_CSRR(cpos, vec, level) {
                         eratio -= 0.02;//just for rounding
                         evec.x = evec.x * eratio;
                         evec.y = evec.y * eratio;
+                        
+                        var edgeToCornerCenter = {}
+                        edgeToCornerCenter.x = ((i * 32.0) + edgeRadius) - (cpos.x + cwidth + evec.x);
+                        edgeToCornerCenter.y = ((j + 1.0) * 32.0 - edgeRadius) - (cpos.y + evec.y);
+                        evec.x = evec.x - (edgeToCornerCenter.x * 0.1);
+                        evec.y = evec.y - (edgeToCornerCenter.y * 0.1);
                         std.printf(eratio + ":" + evec.x + "," + evec.y);
 
                         if(cpos.y + evec.y < ((j + 1.0) * 32.0 - edgeRadius) || cpos.x + evec.x > (i * 32.0) + edgeRadius) {
                             ignoreHit = false
                         } else {
-                            var edgeToCornerCenter = {}
-                            edgeToCornerCenter.x = ((i * 32.0) + edgeRadius) - (cpos.x + cwidth + evec.x);
-                            edgeToCornerCenter.y = ((j + 1.0) * 32.0 - edgeRadius) - (cpos.y + evec.y);
                             var incursionVect = {};
                             incursionVect.x = ovec.x - evec.x;
                             incursionVect.y = ovec.y - evec.y;
@@ -452,13 +456,35 @@ function tryMoveChar_CSRR(cpos, vec, level) {
                             nrx - 0.02 > (i * 32.0) &&
                             nty + 0.02 < (j + 1.0) * 32.0 &&
                             nby - 0.02 > (j * 32.0)) {
-                        hasHit = true;
-                        std.printf(" ee " + i + ',' + j + ' ' + level + ' in ' + nlx + ' ' + nty);
-                        vec.x = 0.0;
-                        vec.y = 0.0;
-                        
-                        afterResVec.y = 0.0;
-                        afterResVec.x = 0.0;
+                        var displaced = false;
+                        // if (nlx - ((i + 1.0) * 32.0) < -3.0) {
+
+                        //     displaced = true;
+                        //     std.printf(" dis1 ");
+                        //     vec.x -= nlx - ((i + 1.0) * 32.0) + 0.1;;
+                        // }
+                        if (nrx - (i * 32.0) < 3.0) {
+
+                            displaced = true;
+                            std.printf(" dis2 ");
+                            vec.x -= nrx - (i * 32.0) + 0.1;
+                        }
+                        if (Math.abs(nty - (j + 1.0) * 32.0) < 3.0) {
+
+                            displaced = true;
+                            std.printf(" dis3 ");
+                            vec.y += Math.abs(nty - (j + 1.0) * 32.0) + 0.1;
+                        }
+
+                        if(!displaced) {
+                            hasHit = true;
+                            std.printf(" ee " + i + ',' + j + ' ' + level + ' in ' + nlx + ' ' + nty);
+                            vec.x = 0.0;
+                            vec.y = 0.0;
+                            
+                            afterResVec.y = 0.0;
+                            afterResVec.x = 0.0;
+                        }
                     }
                 }
 
