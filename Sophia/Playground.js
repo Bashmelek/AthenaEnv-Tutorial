@@ -217,6 +217,15 @@ function setNewBoundsForPosByVec(bounds, posx, posy, w, h, vec) {
     bounds.bottom = posy + h + vec.y;
 }
 
+function getEdgeToCornerCenter(edgecenter, charcorner, evec) {
+                        
+    var edgeToCornerCenter = {}
+    edgeToCornerCenter.x = (edgecenter.x) - (charcorner.x + evec.x);
+    edgeToCornerCenter.y = (edgecenter.y) - (charcorner.y + evec.y);
+
+    return edgeToCornerCenter;
+}
+
 function getCornerNewVec(origvec, squaredEdgeDist, edgeRadius) {
     var evec = { x: origvec.x, y: origvec.y };
     var veclen = Math.sqrt(evec.x * evec.x + evec.y * evec.y);
@@ -332,17 +341,16 @@ function tryMoveChar_CSRR(cpos, vec, level) {
                     std.printf(" n ");
                     if(!ignoreHit){
                         std.printf(" nside ");
+                        var charcorner = { x: cpos.x + cwidth, y: cpos.y };
 
                         var evec = getCornerNewVec(ovec, edgeDist, edgeRadius);
                         
-                        var edgeToCornerCenter = {}
-                        edgeToCornerCenter.x = (edgecenter.x) - (cpos.x + cwidth + evec.x);
-                        edgeToCornerCenter.y = (edgecenter.y) - (cpos.y + evec.y);
+                        var edgeToCornerCenter = getEdgeToCornerCenter(edgecenter, charcorner, evec) 
                         evec.x = evec.x - (edgeToCornerCenter.x * 0.1);
                         evec.y = evec.y - (edgeToCornerCenter.y * 0.1);
                         //std.printf(eratio + ":" + evec.x + "," + evec.y);
 
-                        if(cpos.y + evec.y < (edgecenter.y) || cpos.x + evec.x > edgecenter.x) {
+                        if(charcorner.y + evec.y < (edgecenter.y) || charcorner.x + evec.x > edgecenter.x) {
                             ignoreHit = false
                         } else {                           
                             
