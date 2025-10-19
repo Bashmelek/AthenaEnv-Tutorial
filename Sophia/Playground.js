@@ -209,6 +209,40 @@ function tryMoveChar_Continuous(cpos, vec) {
 
 }
 
+function setNewBoundsForPosByVec(bounds, posx, posy, w, h, vec) {
+    
+    bounds.left = (posx + vec.x);
+    bounds.right = posx + w + vec.x;
+    bounds.top = (posy + vec.y);
+    bounds.bottom = posy + h + vec.y;
+}
+
+function getCornerNewVec(origvec, squaredEdgeDist, edgeRadius) {
+    var evec = { x: origvec.x, y: origvec.y };
+    var veclen = Math.sqrt(evec.x * evec.x + evec.y * evec.y);
+    var realEdgeDist = Math.sqrt(squaredEdgeDist);
+    var eincursion = edgeRadius - realEdgeDist;//
+    var eratio = (veclen - eincursion) / veclen;
+    eratio -= 0.02;//just for rounding
+    evec.x = evec.x * eratio;
+    evec.y = evec.y * eratio;
+
+    return evec;
+}
+
+function getCornerIncursionComp(ovec, evec, edgeRadius, edgeToCornerCenter) {
+
+    var incursionVect = {};
+    incursionVect.x = ovec.x - evec.x;
+    incursionVect.y = ovec.y - evec.y;
+
+    var dot = edgeToCornerCenter.x * incursionVect.x + edgeToCornerCenter.y * incursionVect.y;
+    var proj = { x: (edgeToCornerCenter.x * dot) / (edgeRadius * edgeRadius), y: (edgeToCornerCenter.y * dot) / (edgeRadius * edgeRadius) };
+    var comp = { x: incursionVect.x - proj.x, y: incursionVect.y - proj.y };
+
+    return comp;
+}
+
 //Continuous Single Resolved Rounded...
 function tryMoveChar_CSRR(cpos, vec, level) {
     std.printf("\n");
@@ -299,49 +333,29 @@ function tryMoveChar_CSRR(cpos, vec, level) {
                     if(!ignoreHit){
                         std.printf(" nside ");
 
-                        var newEdgeDst = {};
-
-                        var evec = { x: ovec.x, y: ovec.y };
-                        var veclen = Math.sqrt(evec.x * evec.x + evec.y * evec.y);
-                        var realEdgeDist = Math.sqrt(edgeDist);
-                        var eincursion = edgeRadius - realEdgeDist;//
-                        var eratio = (veclen - eincursion) / veclen;
-                        eratio -= 0.02;//just for rounding
-                        evec.x = evec.x * eratio;
-                        evec.y = evec.y * eratio;
+                        var evec = getCornerNewVec(ovec, edgeDist, edgeRadius);
                         
                         var edgeToCornerCenter = {}
-                        edgeToCornerCenter.x = (otherbox.left + edgeRadius) - (cpos.x + cwidth + evec.x);
-                        edgeToCornerCenter.y = (otherbox.bottom - edgeRadius) - (cpos.y + evec.y);
+                        edgeToCornerCenter.x = (edgecenter.x) - (cpos.x + cwidth + evec.x);
+                        edgeToCornerCenter.y = (edgecenter.y) - (cpos.y + evec.y);
                         evec.x = evec.x - (edgeToCornerCenter.x * 0.1);
                         evec.y = evec.y - (edgeToCornerCenter.y * 0.1);
-                        std.printf(eratio + ":" + evec.x + "," + evec.y);
+                        //std.printf(eratio + ":" + evec.x + "," + evec.y);
 
-                        if(cpos.y + evec.y < (otherbox.bottom - edgeRadius) || cpos.x + evec.x > otherbox.left + edgeRadius) {
+                        if(cpos.y + evec.y < (edgecenter.y) || cpos.x + evec.x > edgecenter.x) {
                             ignoreHit = false
-                        } else {
-                            var incursionVect = {};
-                            incursionVect.x = ovec.x - evec.x;
-                            incursionVect.y = ovec.y - evec.y;
-
-                            var dot = edgeToCornerCenter.x * incursionVect.x + edgeToCornerCenter.y * incursionVect.y;
-                            var proj = { x: (edgeToCornerCenter.x * dot) / (edgeRadius * edgeRadius), y: (edgeToCornerCenter.y * dot) / (edgeRadius * edgeRadius) };
-                            var comp = { x: incursionVect.x - proj.x, y: incursionVect.y - proj.y };
+                        } else {                           
                             
-                            loophit = true;
-                    
+                            loophit = true;                    
                             hasHit = true;
+
                             vec.x = evec.x;
                             vec.y = evec.y;
-
-                            nbpos.left = (cpos.x + vec.x);
-                            nbpos.right = cpos.x + cwidth + vec.x;
-                            nbpos.top = (cpos.y + vec.y);
-                            nbpos.bottom = cpos.y + cheight + vec.y;
-
-                            afterResVec.y = comp.y;
-                            afterResVec.x = comp.x;
                             
+                            setNewBoundsForPosByVec(nbpos, cpos.x, cpos.y, cwidth, cheight, vec);
+                            var comp = getCornerIncursionComp(ovec, evec, edgeRadius, edgeToCornerCenter);
+                            afterResVec.y = comp.y;
+                            afterResVec.x = comp.x;                            
                             std.printf(" nresolve " + comp.x + ',' + comp.y);
                         }
 
@@ -395,10 +409,7 @@ function tryMoveChar_CSRR(cpos, vec, level) {
                     var ratio = ovec.x != 0 ? vec.x / ovec.x : 0.0;
                     vec.y = ratio * ovec.y;// y traveled at collision
 
-                    nbpos.left = (cpos.x + vec.x);
-                    nbpos.right = cpos.x + cwidth + vec.x;
-                    nbpos.top = (cpos.y + vec.y);
-                    nbpos.bottom = cpos.y + cheight + vec.y;
+                    setNewBoundsForPosByVec(nbpos, cpos.x, cpos.y, cwidth, cheight, vec);
 
                     afterResVec.x = 0.0;
                     afterResVec.y = ovec.y - vec.y; //amount of y left
@@ -412,11 +423,8 @@ function tryMoveChar_CSRR(cpos, vec, level) {
                         
                     var ratio = ovec.x != 0 ? vec.x / ovec.x : 0.0;
                     vec.y = ratio * ovec.y;// y traveled at collision
-
-                    nbpos.left = (cpos.x + vec.x);
-                    nbpos.right = cpos.x + cwidth + vec.x;
-                    nbpos.top = (cpos.y + vec.y);
-                    nbpos.bottom = cpos.y + cheight + vec.y;
+                    
+                    setNewBoundsForPosByVec(nbpos, cpos.x, cpos.y, cwidth, cheight, vec);
                         
                     afterResVec.x = 0.0;
                     afterResVec.y = ovec.y - vec.y; //amount of y left
@@ -432,10 +440,7 @@ function tryMoveChar_CSRR(cpos, vec, level) {
                     var ratio = ovec.y != 0 ? vec.y / ovec.y : 0.0;
                     vec.x = ratio * ovec.x;// y traveled at collision
 
-                    nbpos.left = (cpos.x + vec.x);
-                    nbpos.right = cpos.x + cwidth + vec.x;
-                    nbpos.top = (cpos.y + vec.y);
-                    nbpos.bottom = cpos.y + cheight + vec.y;
+                    setNewBoundsForPosByVec(nbpos, cpos.x, cpos.y, cwidth, cheight, vec);
 
                     afterResVec.y = 0.0;
                     afterResVec.x = ovec.x - vec.x;
@@ -451,10 +456,7 @@ function tryMoveChar_CSRR(cpos, vec, level) {
                     var ratio = ovec.y != 0 ? vec.y / ovec.y : 0.0;
                     vec.x = ratio * ovec.x;// y traveled at collision
 
-                    nbpos.left = (cpos.x + vec.x);
-                    nbpos.right = cpos.x + cwidth + vec.x;
-                    nbpos.top = (cpos.y + vec.y);
-                    nbpos.bottom = cpos.y + cheight + vec.y;
+                    setNewBoundsForPosByVec(nbpos, cpos.x, cpos.y, cwidth, cheight, vec);
 
                     afterResVec.y = 0.0;
                     afterResVec.x = ovec.x - vec.x;
