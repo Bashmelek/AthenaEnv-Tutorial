@@ -312,8 +312,11 @@ function tryMoveChar_CSRR(cpos, vec, level) {
 
     var istart = ovec.x < 0 ? newrightx : newleftx;
     var i_inc = ovec.x < 0 ? -1 : 1;
+    var jstart = ovec.y < 0 ? newboty : newtopy;
+    var j_inc = ovec.y < 0 ? -1 : 1;
     for(var i = istart; i >= newleftx && i <= newrightx; i += i_inc) { // (var i = newleftx; i <= newrightx; i++)
-        for(var j = newtopy; j <= newboty; j++) { //
+        //todo george problem with c maybe? very subtle
+        for(var j = jstart; j >= newtopy && j <= newboty; j += j_inc) { //(var j = newtopy; j <= newboty; j++)
             var p = START_BMP24 + ((14 - 1 - j) * 20 * 3) + i * 3;
             
             //std.printf(" at pixel: " + p);//54 + i * 3 + 20 * 3(14 - 1 - j)    
