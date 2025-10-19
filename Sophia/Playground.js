@@ -377,6 +377,35 @@ function tryMoveChar_CSRR(cpos, vec, level) {
                     var edgeDist = (nbpos.top - edgecenter.y) * (nbpos.top - edgecenter.y) + (nbpos.left - edgecenter.x) * (nbpos.left - edgecenter.x);
                     ignoreHit = edgeDist > (edgeRadius * edgeRadius);
                     std.printf(" o ");
+                    if(!ignoreHit){
+                        std.printf(" oside ");
+                        var charcorner = { x: cpos.x, y: cpos.y };
+
+                        var evec = getCornerNewVec(ovec, edgeDist, edgeRadius);
+                        
+                        var edgeToCornerCenter = getEdgeToCornerCenter(edgecenter, charcorner, evec) 
+                        evec.x = evec.x - (edgeToCornerCenter.x * 0.1);
+                        evec.y = evec.y - (edgeToCornerCenter.y * 0.1);
+                        //std.printf(eratio + ":" + evec.x + "," + evec.y);
+
+                        if(charcorner.y + evec.y < (edgecenter.y) || charcorner.x + evec.x < edgecenter.x) {
+                            ignoreHit = false
+                        } else {                           
+                            
+                            loophit = true;                    
+                            hasHit = true;
+
+                            vec.x = evec.x;
+                            vec.y = evec.y;
+                            
+                            setNewBoundsForPosByVec(nbpos, cpos.x, cpos.y, cwidth, cheight, vec);
+                            var comp = getCornerIncursionComp(ovec, evec, edgeRadius, edgeToCornerCenter);
+                            afterResVec.y = comp.y;
+                            afterResVec.x = comp.x;                            
+                            std.printf(" oresolve " + comp.x + ',' + comp.y);
+                        }
+
+                    }
                 }
                 if(nbpos.bottom < otherbox.top + edgeRadius && nbpos.left > otherbox.right - edgeRadius){//your botleft
                     var edgecenter = {};
@@ -386,6 +415,35 @@ function tryMoveChar_CSRR(cpos, vec, level) {
                     var edgeDist = (nbpos.bottom - edgecenter.y) * (nbpos.bottom - edgecenter.y) + (nbpos.left - edgecenter.x) * (nbpos.left - edgecenter.x);
                     ignoreHit = edgeDist > (edgeRadius * edgeRadius);
                     std.printf(" p ");
+                    if(!ignoreHit){
+                        std.printf(" pside ");
+                        var charcorner = { x: cpos.x, y: cpos.y + cheight };
+
+                        var evec = getCornerNewVec(ovec, edgeDist, edgeRadius);
+                        
+                        var edgeToCornerCenter = getEdgeToCornerCenter(edgecenter, charcorner, evec) 
+                        evec.x = evec.x - (edgeToCornerCenter.x * 0.1);
+                        evec.y = evec.y - (edgeToCornerCenter.y * 0.1);
+                        //std.printf(eratio + ":" + evec.x + "," + evec.y);
+
+                        if(charcorner.y + evec.y > (edgecenter.y) || charcorner.x + evec.x < edgecenter.x) {
+                            ignoreHit = false
+                        } else {                           
+                            
+                            loophit = true;                    
+                            hasHit = true;
+
+                            vec.x = evec.x;
+                            vec.y = evec.y;
+                            
+                            setNewBoundsForPosByVec(nbpos, cpos.x, cpos.y, cwidth, cheight, vec);
+                            var comp = getCornerIncursionComp(ovec, evec, edgeRadius, edgeToCornerCenter);
+                            afterResVec.y = comp.y;
+                            afterResVec.x = comp.x;                            
+                            std.printf(" presolve " + comp.x + ',' + comp.y);
+                        }
+
+                    }
                 }
                 if(nbpos.bottom < otherbox.top + edgeRadius && nbpos.right < otherbox.left + edgeRadius){//your botright
                     var edgecenter = {};
@@ -395,6 +453,35 @@ function tryMoveChar_CSRR(cpos, vec, level) {
                     var edgeDist = (nbpos.bottom - edgecenter.y) * (nbpos.bottom - edgecenter.y) + (nbpos.right - edgecenter.x) * (nbpos.right - edgecenter.x);
                     ignoreHit = edgeDist > (edgeRadius * edgeRadius);
                     std.printf(" q ");
+                    if(!ignoreHit){
+                        std.printf(" qside ");
+                        var charcorner = { x: cpos.x + cwidth, y: cpos.y + cheight };
+
+                        var evec = getCornerNewVec(ovec, edgeDist, edgeRadius);
+                        
+                        var edgeToCornerCenter = getEdgeToCornerCenter(edgecenter, charcorner, evec) 
+                        evec.x = evec.x - (edgeToCornerCenter.x * 0.1);
+                        evec.y = evec.y - (edgeToCornerCenter.y * 0.1);
+                        //std.printf(eratio + ":" + evec.x + "," + evec.y);
+
+                        if(charcorner.y + evec.y > (edgecenter.y) || charcorner.x + evec.x > edgecenter.x) {
+                            ignoreHit = false
+                        } else {                           
+                            
+                            loophit = true;                    
+                            hasHit = true;
+
+                            vec.x = evec.x;
+                            vec.y = evec.y;
+                            
+                            setNewBoundsForPosByVec(nbpos, cpos.x, cpos.y, cwidth, cheight, vec);
+                            var comp = getCornerIncursionComp(ovec, evec, edgeRadius, edgeToCornerCenter);
+                            afterResVec.y = comp.y;
+                            afterResVec.x = comp.x;                            
+                            std.printf(" qresolve " + comp.x + ',' + comp.y);
+                        }
+
+                    }
                 }
 
                 if(ignoreHit) {
@@ -478,23 +565,29 @@ function tryMoveChar_CSRR(cpos, vec, level) {
                             nbpos.top + 0.02 < otherbox.bottom &&
                             nbpos.bottom - 0.02 > otherbox.top) {
                         var displaced = false;
-                        // if (nlx - ((i + 1.0) * 32.0) < -3.0) {
+                        if (otherbox.right - nbpos.left < 3.0) {
 
-                        //     displaced = true;
-                        //     std.printf(" dis1 ");
-                        //     vec.x -= nlx - ((i + 1.0) * 32.0) + 0.1;;
-                        // }
+                            displaced = true;
+                            std.printf(" dis1 ");
+                            vec.x += Math.abs(nbpos.left - otherbox.right) + 0.1;
+                        }
                         if (nbpos.right - otherbox.left < 3.0) {
 
                             displaced = true;
                             std.printf(" dis2 ");
                             vec.x -= nbpos.right - otherbox.left + 0.1;
                         }
-                        if (Math.abs(nbpos.top - otherbox.bottom) < 3.0) {
+                        if (otherbox.bottom - nbpos.top < 3.0) {
 
                             displaced = true;
                             std.printf(" dis3 ");
                             vec.y += Math.abs(nbpos.top - otherbox.bottom) + 0.1;
+                        }
+                        if (nbpos.bottom - otherbox.top < 3.0) {
+
+                            displaced = true;
+                            std.printf(" dis4 ");
+                            vec.x -= nbpos.bottom - otherbox.top + 0.1;
                         }
 
                         if(!displaced) {
