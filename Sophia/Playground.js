@@ -18,7 +18,7 @@ let framecounter = 0;
 const p1Pad = Pads.get(0);
 const p2Pad = Pads.get(1);
 
-// Change your root folder to "gpractice" so we can work with file path magic :p
+// Change root folder to "Sophia"
 os.chdir("Sophia");
 
 const tile_lightstone = new Image(resfolder + "/tiles_64lightstone.png");//tiles_64not   tiles_32lightstone
@@ -254,6 +254,11 @@ function tryMoveChar_CSRR(cpos, vec, level) {
     var nrx = cpos.x + cwidth + vec.x;
     var nty = (cpos.y + vec.y);
     var nby = cpos.y + cheight + vec.y;
+    var newboxpos = {};
+    newboxpos.left = (cpos.x + vec.x);
+    newboxpos.right = cpos.x + cwidth + vec.x;
+    newboxpos.top = (cpos.y + vec.y);
+    newboxpos.bottom = cpos.y + cheight + vec.y;
 
     var newleftx = Math.floor((cpos.x + vec.x) / 32);
     var newrightx = Math.floor((cpos.x + cwidth + vec.x) / 32);
@@ -272,15 +277,21 @@ function tryMoveChar_CSRR(cpos, vec, level) {
 
             if(bmap[p + 0] == 0 || i < 0 || j < 0 || i > 19 || j > 13) {
 
+                var otherbox = {};
+                otherbox.right = (i + 1.0) * 32.0;
+                otherbox.left = (i * 32.0);
+                otherbox.top = (j * 32.0);
+                otherbox.bottom = ((j + 1.0) * 32.0);
+
                 var loophit = false;
 
                 var ignoreHit = false;
                 
                 
-                if(j < 13 && bmap[START_BMP24 + ((14 - 2 - j) * 20 * 3) + i * 3] != 0 && nty > (j + 1.0) * 32.0 - edgeRadius && nrx < (i * 32.0) + edgeRadius){//your topright
+                if(j < 13 && bmap[START_BMP24 + ((14 - 2 - j) * 20 * 3) + i * 3] != 0 && nty > otherbox.bottom - edgeRadius && nrx < otherbox.left + edgeRadius){//your topright
                     var edgecenter = {};
-                    edgecenter.x = (i * 32.0) + edgeRadius;
-                    edgecenter.y = (j + 1.0) * 32.0 - edgeRadius;
+                    edgecenter.x = otherbox.left + edgeRadius;
+                    edgecenter.y = otherbox.bottom - edgeRadius;
 
                     var edgeDist = (nty - edgecenter.y) * (nty - edgecenter.y) + (nrx - edgecenter.x) * (nrx - edgecenter.x);
                     ignoreHit = edgeDist > (edgeRadius * edgeRadius);
@@ -300,13 +311,13 @@ function tryMoveChar_CSRR(cpos, vec, level) {
                         evec.y = evec.y * eratio;
                         
                         var edgeToCornerCenter = {}
-                        edgeToCornerCenter.x = ((i * 32.0) + edgeRadius) - (cpos.x + cwidth + evec.x);
-                        edgeToCornerCenter.y = ((j + 1.0) * 32.0 - edgeRadius) - (cpos.y + evec.y);
+                        edgeToCornerCenter.x = (otherbox.left + edgeRadius) - (cpos.x + cwidth + evec.x);
+                        edgeToCornerCenter.y = (otherbox.bottom - edgeRadius) - (cpos.y + evec.y);
                         evec.x = evec.x - (edgeToCornerCenter.x * 0.1);
                         evec.y = evec.y - (edgeToCornerCenter.y * 0.1);
                         std.printf(eratio + ":" + evec.x + "," + evec.y);
 
-                        if(cpos.y + evec.y < ((j + 1.0) * 32.0 - edgeRadius) || cpos.x + evec.x > (i * 32.0) + edgeRadius) {
+                        if(cpos.y + evec.y < (otherbox.bottom - edgeRadius) || cpos.x + evec.x > otherbox.left + edgeRadius) {
                             ignoreHit = false
                         } else {
                             var incursionVect = {};
@@ -336,28 +347,28 @@ function tryMoveChar_CSRR(cpos, vec, level) {
 
                     }
                 }
-                if(nty > (j + 1.0) * 32.0 - edgeRadius && nlx > (i + 1.0) * 32.0 - edgeRadius){//your topleft
+                if(nty > otherbox.bottom - edgeRadius && nlx > otherbox.right - edgeRadius){//your topleft
                     var edgecenter = {};
-                    edgecenter.x = (i + 1.0) * 32.0 - edgeRadius;
-                    edgecenter.y = (j + 1.0) * 32.0 - edgeRadius;
+                    edgecenter.x = otherbox.right - edgeRadius;
+                    edgecenter.y = otherbox.bottom - edgeRadius;
 
                     var edgeDist = (nty - edgecenter.y) * (nty - edgecenter.y) + (nlx - edgecenter.x) * (nlx - edgecenter.x);
                     ignoreHit = edgeDist > (edgeRadius * edgeRadius);
                     std.printf(" o ");
                 }
-                if(nby < (j * 32.0) + edgeRadius && nlx > (i + 1.0) * 32.0 - edgeRadius){//your botleft
+                if(nby < otherbox.top + edgeRadius && nlx > otherbox.right - edgeRadius){//your botleft
                     var edgecenter = {};
-                    edgecenter.x = (i + 1.0) * 32.0 - edgeRadius;
-                    edgecenter.y = (j * 32.0) + edgeRadius;
+                    edgecenter.x = otherbox.right - edgeRadius;
+                    edgecenter.y = otherbox.top + edgeRadius;
 
                     var edgeDist = (nby - edgecenter.y) * (nby - edgecenter.y) + (nlx - edgecenter.x) * (nlx - edgecenter.x);
                     ignoreHit = edgeDist > (edgeRadius * edgeRadius);
                     std.printf(" p ");
                 }
-                if(nby < (j * 32.0) + edgeRadius && nrx < (i * 32.0) + edgeRadius){//your botright
+                if(nby < otherbox.top + edgeRadius && nrx < otherbox.left + edgeRadius){//your botright
                     var edgecenter = {};
-                    edgecenter.x = (i * 32.0) + edgeRadius;
-                    edgecenter.y = (j * 32.0) + edgeRadius;
+                    edgecenter.x = otherbox.left + edgeRadius;
+                    edgecenter.y = otherbox.top + edgeRadius;
 
                     var edgeDist = (nby - edgecenter.y) * (nby - edgecenter.y) + (nrx - edgecenter.x) * (nrx - edgecenter.x);
                     ignoreHit = edgeDist > (edgeRadius * edgeRadius);
@@ -373,13 +384,13 @@ function tryMoveChar_CSRR(cpos, vec, level) {
                     continue;
                 }
 
-                if(nlx < (i + 1.0) * 32.0 && olx >= ((i + 1.0) * 32.0)){//from right
+                if(nlx < otherbox.right && olx >= (otherbox.right)){//from right
 
                     std.printf(" a ");
                     loophit = true;
                     
                     hasHit = true;
-                    vec.x = ((i + 1.0) * 32.0) - olx + 0.04;
+                    vec.x = (otherbox.right) - olx + 0.04;
                     
                     var ratio = ovec.x != 0 ? vec.x / ovec.x : 0.0;
                     vec.y = ratio * ovec.y;// y traveled at collision
@@ -392,12 +403,12 @@ function tryMoveChar_CSRR(cpos, vec, level) {
                     afterResVec.x = 0.0;
                     afterResVec.y = ovec.y - vec.y; //amount of y left
                 } 
-                if(nrx > (i * 32.0) && orx <= (i * 32.0)) {//from left
+                if(nrx > otherbox.left && orx <= otherbox.left) {//from left
                     std.printf(" b ");
                     loophit = true;
                     
                     hasHit = true;
-                    vec.x = (i * 32.0) - orx - 0.04;
+                    vec.x = otherbox.left - orx - 0.04;
                         
                     var ratio = ovec.x != 0 ? vec.x / ovec.x : 0.0;
                     vec.y = ratio * ovec.y;// y traveled at collision
@@ -410,13 +421,13 @@ function tryMoveChar_CSRR(cpos, vec, level) {
                     afterResVec.x = 0.0;
                     afterResVec.y = ovec.y - vec.y; //amount of y left
                 }  
-                if(nty < (j + 1.0) * 32.0 && oty >= ((j + 1.0) * 32.0) ){// 
+                if(nty < otherbox.bottom && oty >= (otherbox.bottom) ){// 
                     
                     std.printf(" c ");
                     loophit = true;
                     
                     hasHit = true;
-                    vec.y = ((j + 1.0) * 32.0) - oty + 0.04;
+                    vec.y = (otherbox.bottom) - oty + 0.04;
                     
                     var ratio = ovec.y != 0 ? vec.y / ovec.y : 0.0;
                     vec.x = ratio * ovec.x;// y traveled at collision
@@ -429,13 +440,13 @@ function tryMoveChar_CSRR(cpos, vec, level) {
                     afterResVec.y = 0.0;
                     afterResVec.x = ovec.x - vec.x;
                 } 
-                if(nby > (j * 32.0) && oby <= (j * 32.0)) {// 
+                if(nby > otherbox.top && oby <= otherbox.top) {// 
                     
                     std.printf(" d ");
                     loophit = true;
                     
                     hasHit = true;
-                    vec.y = (j * 32.0) - oby - 0.04;
+                    vec.y = otherbox.top - oby - 0.04;
                     
                     var ratio = ovec.y != 0 ? vec.y / ovec.y : 0.0;
                     vec.x = ratio * ovec.x;// y traveled at collision
@@ -452,10 +463,10 @@ function tryMoveChar_CSRR(cpos, vec, level) {
                 if(!loophit)
                 {
                     
-                    if(nlx + 0.02 < (i + 1.0) * 32.0 &&
-                            nrx - 0.02 > (i * 32.0) &&
-                            nty + 0.02 < (j + 1.0) * 32.0 &&
-                            nby - 0.02 > (j * 32.0)) {
+                    if(nlx + 0.02 < otherbox.right &&
+                            nrx - 0.02 > otherbox.left &&
+                            nty + 0.02 < otherbox.bottom &&
+                            nby - 0.02 > otherbox.top) {
                         var displaced = false;
                         // if (nlx - ((i + 1.0) * 32.0) < -3.0) {
 
@@ -463,17 +474,17 @@ function tryMoveChar_CSRR(cpos, vec, level) {
                         //     std.printf(" dis1 ");
                         //     vec.x -= nlx - ((i + 1.0) * 32.0) + 0.1;;
                         // }
-                        if (nrx - (i * 32.0) < 3.0) {
+                        if (nrx - otherbox.left < 3.0) {
 
                             displaced = true;
                             std.printf(" dis2 ");
-                            vec.x -= nrx - (i * 32.0) + 0.1;
+                            vec.x -= nrx - otherbox.left + 0.1;
                         }
-                        if (Math.abs(nty - (j + 1.0) * 32.0) < 3.0) {
+                        if (Math.abs(nty - otherbox.bottom) < 3.0) {
 
                             displaced = true;
                             std.printf(" dis3 ");
-                            vec.y += Math.abs(nty - (j + 1.0) * 32.0) + 0.1;
+                            vec.y += Math.abs(nty - otherbox.bottom) + 0.1;
                         }
 
                         if(!displaced) {
