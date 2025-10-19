@@ -250,15 +250,15 @@ function tryMoveChar_CSRR(cpos, vec, level) {
     var oty = cpos.y;
     var oby = cpos.y + cheight;
 
-    var nlx = (cpos.x + vec.x);
-    var nrx = cpos.x + cwidth + vec.x;
-    var nty = (cpos.y + vec.y);
-    var nby = cpos.y + cheight + vec.y;
-    var newboxpos = {};
-    newboxpos.left = (cpos.x + vec.x);
-    newboxpos.right = cpos.x + cwidth + vec.x;
-    newboxpos.top = (cpos.y + vec.y);
-    newboxpos.bottom = cpos.y + cheight + vec.y;
+    //var nlx = (cpos.x + vec.x);
+    //var nrx = cpos.x + cwidth + vec.x;
+    //var nty = (cpos.y + vec.y);
+    //var nby = cpos.y + cheight + vec.y;
+    var nbpos = {};
+    nbpos.left = (cpos.x + vec.x);
+    nbpos.right = cpos.x + cwidth + vec.x;
+    nbpos.top = (cpos.y + vec.y);
+    nbpos.bottom = cpos.y + cheight + vec.y;
 
     var newleftx = Math.floor((cpos.x + vec.x) / 32);
     var newrightx = Math.floor((cpos.x + cwidth + vec.x) / 32);
@@ -288,12 +288,12 @@ function tryMoveChar_CSRR(cpos, vec, level) {
                 var ignoreHit = false;
                 
                 
-                if(j < 13 && bmap[START_BMP24 + ((14 - 2 - j) * 20 * 3) + i * 3] != 0 && nty > otherbox.bottom - edgeRadius && nrx < otherbox.left + edgeRadius){//your topright
+                if(j < 13 && bmap[START_BMP24 + ((14 - 2 - j) * 20 * 3) + i * 3] != 0 && nbpos.top > otherbox.bottom - edgeRadius && nbpos.right < otherbox.left + edgeRadius){//your topright
                     var edgecenter = {};
                     edgecenter.x = otherbox.left + edgeRadius;
                     edgecenter.y = otherbox.bottom - edgeRadius;
 
-                    var edgeDist = (nty - edgecenter.y) * (nty - edgecenter.y) + (nrx - edgecenter.x) * (nrx - edgecenter.x);
+                    var edgeDist = (nbpos.top - edgecenter.y) * (nbpos.top - edgecenter.y) + (nbpos.right - edgecenter.x) * (nbpos.right - edgecenter.x);
                     ignoreHit = edgeDist > (edgeRadius * edgeRadius);
                     std.printf(" n ");
                     if(!ignoreHit){
@@ -334,10 +334,10 @@ function tryMoveChar_CSRR(cpos, vec, level) {
                             vec.x = evec.x;
                             vec.y = evec.y;
 
-                            nlx = (cpos.x + vec.x);
-                            nrx = cpos.x + cwidth + vec.x;
-                            nty = (cpos.y + vec.y);
-                            nby = cpos.y + cheight + vec.y;
+                            nbpos.left = (cpos.x + vec.x);
+                            nbpos.right = cpos.x + cwidth + vec.x;
+                            nbpos.top = (cpos.y + vec.y);
+                            nbpos.bottom = cpos.y + cheight + vec.y;
 
                             afterResVec.y = comp.y;
                             afterResVec.x = comp.x;
@@ -347,30 +347,30 @@ function tryMoveChar_CSRR(cpos, vec, level) {
 
                     }
                 }
-                if(nty > otherbox.bottom - edgeRadius && nlx > otherbox.right - edgeRadius){//your topleft
+                if(nbpos.top > otherbox.bottom - edgeRadius && nbpos.left > otherbox.right - edgeRadius){//your topleft
                     var edgecenter = {};
                     edgecenter.x = otherbox.right - edgeRadius;
                     edgecenter.y = otherbox.bottom - edgeRadius;
 
-                    var edgeDist = (nty - edgecenter.y) * (nty - edgecenter.y) + (nlx - edgecenter.x) * (nlx - edgecenter.x);
+                    var edgeDist = (nbpos.top - edgecenter.y) * (nbpos.top - edgecenter.y) + (nbpos.left - edgecenter.x) * (nbpos.left - edgecenter.x);
                     ignoreHit = edgeDist > (edgeRadius * edgeRadius);
                     std.printf(" o ");
                 }
-                if(nby < otherbox.top + edgeRadius && nlx > otherbox.right - edgeRadius){//your botleft
+                if(nbpos.bottom < otherbox.top + edgeRadius && nbpos.left > otherbox.right - edgeRadius){//your botleft
                     var edgecenter = {};
                     edgecenter.x = otherbox.right - edgeRadius;
                     edgecenter.y = otherbox.top + edgeRadius;
 
-                    var edgeDist = (nby - edgecenter.y) * (nby - edgecenter.y) + (nlx - edgecenter.x) * (nlx - edgecenter.x);
+                    var edgeDist = (nbpos.bottom - edgecenter.y) * (nbpos.bottom - edgecenter.y) + (nbpos.left - edgecenter.x) * (nbpos.left - edgecenter.x);
                     ignoreHit = edgeDist > (edgeRadius * edgeRadius);
                     std.printf(" p ");
                 }
-                if(nby < otherbox.top + edgeRadius && nrx < otherbox.left + edgeRadius){//your botright
+                if(nbpos.bottom < otherbox.top + edgeRadius && nbpos.right < otherbox.left + edgeRadius){//your botright
                     var edgecenter = {};
                     edgecenter.x = otherbox.left + edgeRadius;
                     edgecenter.y = otherbox.top + edgeRadius;
 
-                    var edgeDist = (nby - edgecenter.y) * (nby - edgecenter.y) + (nrx - edgecenter.x) * (nrx - edgecenter.x);
+                    var edgeDist = (nbpos.bottom - edgecenter.y) * (nbpos.bottom - edgecenter.y) + (nbpos.right - edgecenter.x) * (nbpos.right - edgecenter.x);
                     ignoreHit = edgeDist > (edgeRadius * edgeRadius);
                     std.printf(" q ");
                 }
@@ -384,7 +384,7 @@ function tryMoveChar_CSRR(cpos, vec, level) {
                     continue;
                 }
 
-                if(nlx < otherbox.right && olx >= (otherbox.right)){//from right
+                if(nbpos.left < otherbox.right && olx >= (otherbox.right)){//from right
 
                     std.printf(" a ");
                     loophit = true;
@@ -395,15 +395,15 @@ function tryMoveChar_CSRR(cpos, vec, level) {
                     var ratio = ovec.x != 0 ? vec.x / ovec.x : 0.0;
                     vec.y = ratio * ovec.y;// y traveled at collision
 
-                    nlx = (cpos.x + vec.x);
-                    nrx = cpos.x + cwidth + vec.x;
-                    nty = (cpos.y + vec.y);
-                    nby = cpos.y + cheight + vec.y;
+                    nbpos.left = (cpos.x + vec.x);
+                    nbpos.right = cpos.x + cwidth + vec.x;
+                    nbpos.top = (cpos.y + vec.y);
+                    nbpos.bottom = cpos.y + cheight + vec.y;
 
                     afterResVec.x = 0.0;
                     afterResVec.y = ovec.y - vec.y; //amount of y left
                 } 
-                if(nrx > otherbox.left && orx <= otherbox.left) {//from left
+                if(nbpos.right > otherbox.left && orx <= otherbox.left) {//from left
                     std.printf(" b ");
                     loophit = true;
                     
@@ -413,15 +413,15 @@ function tryMoveChar_CSRR(cpos, vec, level) {
                     var ratio = ovec.x != 0 ? vec.x / ovec.x : 0.0;
                     vec.y = ratio * ovec.y;// y traveled at collision
 
-                    nlx = (cpos.x + vec.x);
-                    nrx = cpos.x + cwidth + vec.x;
-                    nty = (cpos.y + vec.y);
-                    nby = cpos.y + cheight + vec.y;
+                    nbpos.left = (cpos.x + vec.x);
+                    nbpos.right = cpos.x + cwidth + vec.x;
+                    nbpos.top = (cpos.y + vec.y);
+                    nbpos.bottom = cpos.y + cheight + vec.y;
                         
                     afterResVec.x = 0.0;
                     afterResVec.y = ovec.y - vec.y; //amount of y left
                 }  
-                if(nty < otherbox.bottom && oty >= (otherbox.bottom) ){// 
+                if(nbpos.top < otherbox.bottom && oty >= (otherbox.bottom) ){// 
                     
                     std.printf(" c ");
                     loophit = true;
@@ -432,15 +432,15 @@ function tryMoveChar_CSRR(cpos, vec, level) {
                     var ratio = ovec.y != 0 ? vec.y / ovec.y : 0.0;
                     vec.x = ratio * ovec.x;// y traveled at collision
 
-                    nlx = (cpos.x + vec.x);
-                    nrx = cpos.x + cwidth + vec.x;
-                    nty = (cpos.y + vec.y);
-                    nby = cpos.y + cheight + vec.y;
+                    nbpos.left = (cpos.x + vec.x);
+                    nbpos.right = cpos.x + cwidth + vec.x;
+                    nbpos.top = (cpos.y + vec.y);
+                    nbpos.bottom = cpos.y + cheight + vec.y;
 
                     afterResVec.y = 0.0;
                     afterResVec.x = ovec.x - vec.x;
                 } 
-                if(nby > otherbox.top && oby <= otherbox.top) {// 
+                if(nbpos.bottom > otherbox.top && oby <= otherbox.top) {// 
                     
                     std.printf(" d ");
                     loophit = true;
@@ -451,10 +451,10 @@ function tryMoveChar_CSRR(cpos, vec, level) {
                     var ratio = ovec.y != 0 ? vec.y / ovec.y : 0.0;
                     vec.x = ratio * ovec.x;// y traveled at collision
 
-                    nlx = (cpos.x + vec.x);
-                    nrx = cpos.x + cwidth + vec.x;
-                    nty = (cpos.y + vec.y);
-                    nby = cpos.y + cheight + vec.y;
+                    nbpos.left = (cpos.x + vec.x);
+                    nbpos.right = cpos.x + cwidth + vec.x;
+                    nbpos.top = (cpos.y + vec.y);
+                    nbpos.bottom = cpos.y + cheight + vec.y;
 
                     afterResVec.y = 0.0;
                     afterResVec.x = ovec.x - vec.x;
@@ -463,10 +463,10 @@ function tryMoveChar_CSRR(cpos, vec, level) {
                 if(!loophit)
                 {
                     
-                    if(nlx + 0.02 < otherbox.right &&
-                            nrx - 0.02 > otherbox.left &&
-                            nty + 0.02 < otherbox.bottom &&
-                            nby - 0.02 > otherbox.top) {
+                    if(nbpos.left + 0.02 < otherbox.right &&
+                            nbpos.right - 0.02 > otherbox.left &&
+                            nbpos.top + 0.02 < otherbox.bottom &&
+                            nbpos.bottom - 0.02 > otherbox.top) {
                         var displaced = false;
                         // if (nlx - ((i + 1.0) * 32.0) < -3.0) {
 
@@ -474,22 +474,22 @@ function tryMoveChar_CSRR(cpos, vec, level) {
                         //     std.printf(" dis1 ");
                         //     vec.x -= nlx - ((i + 1.0) * 32.0) + 0.1;;
                         // }
-                        if (nrx - otherbox.left < 3.0) {
+                        if (nbpos.right - otherbox.left < 3.0) {
 
                             displaced = true;
                             std.printf(" dis2 ");
-                            vec.x -= nrx - otherbox.left + 0.1;
+                            vec.x -= nbpos.right - otherbox.left + 0.1;
                         }
-                        if (Math.abs(nty - otherbox.bottom) < 3.0) {
+                        if (Math.abs(nbpos.top - otherbox.bottom) < 3.0) {
 
                             displaced = true;
                             std.printf(" dis3 ");
-                            vec.y += Math.abs(nty - otherbox.bottom) + 0.1;
+                            vec.y += Math.abs(nbpos.top - otherbox.bottom) + 0.1;
                         }
 
                         if(!displaced) {
                             hasHit = true;
-                            std.printf(" ee " + i + ',' + j + ' ' + level + ' in ' + nlx + ' ' + nty);
+                            std.printf(" ee " + i + ',' + j + ' ' + level + ' in ' + nbpos.left + ' ' + nbpos.top);
                             vec.x = 0.0;
                             vec.y = 0.0;
                             
