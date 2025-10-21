@@ -61,7 +61,9 @@ sprite_lr.drawoffsetx = 0.0;
 
 var charpos = { x: 50.0, y: 50.0, width: 64, height: 64, drawoffsetx: 0.0, drawoffsety: 0.0, isFlipped: false, 
     charsprite: sprite_lr,
-    facing: 'r' };
+    facing: 'r',
+    timemove: 0.0,
+    lastmovevec: { x: 0.0, y: 0.0 } };
 
 var mapobjects = new Array();
 
@@ -756,6 +758,7 @@ Screen.display(() => {
     var sprite = charpos.charsprite;
 
     var movevec = { x: 0.0, y: 0.0 };
+    var speed = Math.min(Math.max(1.00, charpos.timemove / 1.2) * 0.79, 5.09);
 
     if (p1Pad.pressed(Pads.RIGHT)) {
         sprite = sprite_lr;
@@ -769,7 +772,7 @@ Screen.display(() => {
 
         charpos.facing = 'r';
         //tryMoveChar_Continuous(charpos, { x: 5.09, y: 0.0 });
-        movevec.x = 5.09;
+        movevec.x = speed;
     }
 
     if (p1Pad.pressed(Pads.LEFT)) {
@@ -782,7 +785,7 @@ Screen.display(() => {
         } 
         charpos.facing = 'l';
         //tryMoveChar_Continuous(charpos, { x: -5.09, y: 0.0 });
-        movevec.x = -5.09;
+        movevec.x = -speed;
     }
 
     if (p1Pad.pressed(Pads.UP)) {
@@ -795,7 +798,7 @@ Screen.display(() => {
         // } 
         charpos.facing = 'b';
         //tryMoveChar_Continuous(charpos, { x: 0.0, y: -5.09 });
-        movevec.y = -5.09;
+        movevec.y = -speed;
     }
 
     if (p1Pad.pressed(Pads.DOWN)) {
@@ -808,11 +811,20 @@ Screen.display(() => {
         // } 
         charpos.facing = 'f';
         //tryMoveChar_Continuous(charpos, { x: 0.0, y: 5.09 });
-        movevec.y = 5.09;
+        movevec.y = speed;
     }
 
     if(movevec.x != 0.0 || movevec.y != 0.0) {
-        tryMoveChar_CSRR(charpos, movevec, 3)
+        var vecdist = Math.sqrt((movevec.x * movevec.x) + (movevec.y * movevec.y));
+
+        charpos.timemove += 1.0;
+
+        movevec.x = speed * movevec.x / vecdist;
+        movevec.y = speed * movevec.y / vecdist;
+
+        tryMoveChar_CSRR(charpos, movevec, 3);
+    } else {
+        charpos.timemove = 0.0;
     }
 
     checkObectCollisions();
