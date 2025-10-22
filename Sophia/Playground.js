@@ -106,6 +106,21 @@ tile_lightstone.height = 32;
 tile_dblue.width = 32;
 tile_dblue.height = 32;
 
+var interruptEffect = null;
+var allowMoveChar = true;
+
+var gamemode = {
+    "loadingmap": 0,
+    "inovermap": 1,
+    "initgame": 2
+}
+
+var gamestate = {
+    currentGameMode: gamemode["initgame"]
+};
+
+
+
 var level_0_pathedSpecials = {
 
     1: { code: 'doorkey' },
@@ -114,9 +129,15 @@ var level_0_pathedSpecials = {
     4: { code: 'chest_w', id: 0 },
     5: { code: 'chest_n', id: 1 },
     6: { code: 'enterzone', id: 0 },
-    7: { code: 'exitzone', id: 0 }
+    7: { code: 'exitzone', id: 0 },
+    8: { code: 'exitzone', id: 1 }
 
 };
+
+function loadLevel(levelnum) {
+
+
+}
 
 function createMapObject(numcode, level, x, y) {
 
@@ -133,6 +154,20 @@ function createMapObject(numcode, level, x, y) {
         newobj.y = y;
         newobj.width = 32;
         newobj.height = 32;
+        newobj.collisionType = 'touch'
+    }
+    if(ref.code == 'exitzone') {
+        newobj.code = ref.code;
+        newobj.sprite = null;
+        newobj.x = x;
+        newobj.y = y;
+        newobj.width = 32;
+        newobj.height = 32;
+        newobj.collisionType = 'mycenter'
+        newobj.interruptEffect = function() {
+            allowMoveChar = false;
+            loadLevel(1);
+        }
     }
 
     mapobjects.push(newobj);
@@ -640,19 +675,31 @@ function tryMoveChar_CSRR(cpos, vec, level) {
 
 function checkObectCollisions() {
     var idsToDelete = new Array();
+    var interruptSideEffectObj = null;
     for(let c = 0; c < mapobjects.length; c++) {
         var mo = mapobjects[c];
         //if( Math.abs(charpos.x + charpos.width / 2.0 - (mo.x + mo.width / 2.0)) < Math.abs(mo.width / 2.0 + charpos.width / 2.0))
-        if( charpos.x + 0.01 < mo.x + mo.width && charpos.x + charpos.width > mo.x + 0.01) {
+        if(mapobjects[c].collisionType == 'touch' && charpos.x + 0.01 < mo.x + mo.width && charpos.x + charpos.width > mo.x + 0.01) {
             if( charpos.y + 0.01 < mo.y + mo.height && charpos.y + charpos.height > mo.y + 0.01) {
                 idsToDelete.push(c);    
                 std.printf(" \n picked up " + c);
             }
         }
+        if(mapobjects[c].collisionType == 'mycenter' && charpos.x < mo.x + mo.width / 2.0 && charpos.x + charpos.width > mo.x + mo.width / 2.0) {
+            if( charpos.y + 0.01 < mo.y + mo.height + mo.height / 2.0 && charpos.y + charpos.height > mo.y + mo.height / 2.0) {
+                //idsToDelete.push(c); 
+                interruptSideEffectObj = mo;   
+                std.printf(" \n\n contains cneter " + c);
+            }
+        }
     }
 
-    for(let d = 0; d < idsToDelete.length; d++) {
-        mapobjects.splice(idsToDelete[d], 1);
+    if(interruptSideEffectObj && interruptSideEffectObj.interruptEffect) {
+        interruptEffect = interruptSideEffectObj.interruptEffect;
+    } else {        
+        for(let d = 0; d < idsToDelete.length; d++) {
+            mapobjects.splice(idsToDelete[d], 1);
+        }
     }
 }
 
@@ -711,6 +758,105 @@ function SetupLevelFromImage_Static(){
 //setup bg
 SetupLevelFromImage_Static();
 
+function RunInOverMap() {
+    var sprite = charpos.charsprite;
+
+    if(allowMoveChar) {
+
+        var movevec = { x: 0.0, y: 0.0 };
+        var speed = Math.min(Math.max(1.00, charpos.timemove / 1.2) * 0.79, 5.09);
+
+        if (p1Pad.pressed(Pads.RIGHT)) {
+            sprite = sprite_lr;
+            if (charpos.isFlipped) {
+                sprite.width = Math.abs(sprite.width);
+                sprite.x = 0;
+                //charpos.x -= sprite.width;
+                sprite.drawoffsetx = 0;
+                charpos.isFlipped = false;
+            } 
+
+            charpos.facing = 'r';
+            //tryMoveChar_Continuous(charpos, { x: 5.09, y: 0.0 });
+            movevec.x = speed;
+        }
+
+        if (p1Pad.pressed(Pads.LEFT)) {
+            sprite = sprite_lr;
+            if (!charpos.isFlipped) {
+                sprite.width = -Math.abs(sprite.width);
+                sprite.x = sprite.width;
+                sprite.drawoffsetx = -sprite.width;
+                charpos.isFlipped = true;
+            } 
+            charpos.facing = 'l';
+            //tryMoveChar_Continuous(charpos, { x: -5.09, y: 0.0 });
+            movevec.x = -speed;
+        }
+
+        if (p1Pad.pressed(Pads.UP)) {
+            sprite = sprite_b;
+            // if (charpos.isFlipped) {
+            //     sprite.width = Math.abs(sprite.width);
+            //     sprite.x = 0;
+            //     charpos.drawoffsetx = 0;
+            //     charpos.isFlipped = false; 
+            // } 
+            charpos.facing = 'b';
+            //tryMoveChar_Continuous(charpos, { x: 0.0, y: -5.09 });
+            movevec.y = -speed;
+        }
+
+        if (p1Pad.pressed(Pads.DOWN)) {
+            sprite = sprite_f;
+            // if (charpos.isFlipped) {
+            //     sprite.width = Math.abs(sprite.width);
+            //     sprite.x = 0;
+            //     charpos.drawoffsetx = 0;
+            //     charpos.isFlipped = false;
+            // } 
+            charpos.facing = 'f';
+            //tryMoveChar_Continuous(charpos, { x: 0.0, y: 5.09 });
+            movevec.y = speed;
+        }
+
+        if(movevec.x != 0.0 || movevec.y != 0.0) {
+            var vecdist = Math.sqrt((movevec.x * movevec.x) + (movevec.y * movevec.y));
+
+            charpos.timemove += 1.0;
+
+            movevec.x = speed * movevec.x / vecdist;
+            movevec.y = speed * movevec.y / vecdist;
+
+            tryMoveChar_CSRR(charpos, movevec, 3);
+        } else {
+            charpos.timemove = 0.0;
+        }
+
+        checkObectCollisions();
+    }
+    
+    
+    screen_640x448.draw(0.0, 0.0);//tile_dblue   screen_640x448
+
+    for(let c = 0; c < mapobjects.length; c++) {
+        var mo = mapobjects[c];
+        if(mo.sprite) {
+            mapobjects[c].sprite.draw(mo.x, mo.y);
+        }
+    }
+
+    sprite.draw(charpos.x + (sprite.drawoffsetx || 0.0), charpos.y + charpos.drawoffsety);
+    font.print(10, 10, "Why dost thou continue?");    
+
+    charpos.charsprite = sprite;
+
+    
+    if(interruptEffect) {
+        interruptEffect();
+    }
+}
+
 Screen.display(() => {
    //if (timer.get() > frameDuration) {
    //   if (frameIndex < runAnimFrames.length - 1) {
@@ -755,91 +901,22 @@ Screen.display(() => {
 
     p1Pad.update();
 
-    var sprite = charpos.charsprite;
+    
+    //std.printf("\n" + gamestate.currentGameMode + "\n");
 
-    var movevec = { x: 0.0, y: 0.0 };
-    var speed = Math.min(Math.max(1.00, charpos.timemove / 1.2) * 0.79, 5.09);
+    switch(gamestate.currentGameMode) {
+        case gamemode["loadingmap"]:
+            gamestate.currentGameMode = gamemode["inovermap"];
+        break;
+        case gamemode["inovermap"]: 
+            RunInOverMap();
+        break;
+        case gamemode["initgame"]: 
+            gamestate.currentGameMode = gamemode["inovermap"];
+        break;
 
-    if (p1Pad.pressed(Pads.RIGHT)) {
-        sprite = sprite_lr;
-        if (charpos.isFlipped) {
-            sprite.width = Math.abs(sprite.width);
-            sprite.x = 0;
-            //charpos.x -= sprite.width;
-            sprite.drawoffsetx = 0;
-            charpos.isFlipped = false;
-        } 
-
-        charpos.facing = 'r';
-        //tryMoveChar_Continuous(charpos, { x: 5.09, y: 0.0 });
-        movevec.x = speed;
     }
 
-    if (p1Pad.pressed(Pads.LEFT)) {
-        sprite = sprite_lr;
-        if (!charpos.isFlipped) {
-            sprite.width = -Math.abs(sprite.width);
-            sprite.x = sprite.width;
-            sprite.drawoffsetx = -sprite.width;
-            charpos.isFlipped = true;
-        } 
-        charpos.facing = 'l';
-        //tryMoveChar_Continuous(charpos, { x: -5.09, y: 0.0 });
-        movevec.x = -speed;
-    }
-
-    if (p1Pad.pressed(Pads.UP)) {
-        sprite = sprite_b;
-        // if (charpos.isFlipped) {
-        //     sprite.width = Math.abs(sprite.width);
-        //     sprite.x = 0;
-        //     charpos.drawoffsetx = 0;
-        //     charpos.isFlipped = false; 
-        // } 
-        charpos.facing = 'b';
-        //tryMoveChar_Continuous(charpos, { x: 0.0, y: -5.09 });
-        movevec.y = -speed;
-    }
-
-    if (p1Pad.pressed(Pads.DOWN)) {
-        sprite = sprite_f;
-        // if (charpos.isFlipped) {
-        //     sprite.width = Math.abs(sprite.width);
-        //     sprite.x = 0;
-        //     charpos.drawoffsetx = 0;
-        //     charpos.isFlipped = false;
-        // } 
-        charpos.facing = 'f';
-        //tryMoveChar_Continuous(charpos, { x: 0.0, y: 5.09 });
-        movevec.y = speed;
-    }
-
-    if(movevec.x != 0.0 || movevec.y != 0.0) {
-        var vecdist = Math.sqrt((movevec.x * movevec.x) + (movevec.y * movevec.y));
-
-        charpos.timemove += 1.0;
-
-        movevec.x = speed * movevec.x / vecdist;
-        movevec.y = speed * movevec.y / vecdist;
-
-        tryMoveChar_CSRR(charpos, movevec, 3);
-    } else {
-        charpos.timemove = 0.0;
-    }
-
-    checkObectCollisions();
-   
-    screen_640x448.draw(0.0, 0.0);//tile_dblue   screen_640x448
-
-    for(let c = 0; c < mapobjects.length; c++) {
-        var mo = mapobjects[c];
-        mapobjects[c].sprite.draw(mo.x, mo.y);
-    }
-
-    sprite.draw(charpos.x + (sprite.drawoffsetx || 0.0), charpos.y + charpos.drawoffsety);
-    font.print(10, 10, "Why dost thou continue?");    
-
-    charpos.charsprite = sprite;
     ////sprite.draw(charpos.x + 40, charpos.y);
     ////blank_128.draw(20.0, 20.0)
 });
