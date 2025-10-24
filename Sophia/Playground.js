@@ -410,6 +410,10 @@ function tryMoveChar_CSRR(cpos, vec, level) {
             
             //std.printf(" at pixel: " + p);//54 + i * 3 + 20 * 3(14 - 1 - j)    
 
+            if(i < 0 || j < 0 || i > 19 || j > 13){
+                continue;
+            }
+
             if(bmap[p + 0] == 0 || i < 0 || j < 0 || i > 19 || j > 13) {
 
                 var otherbox = {};
@@ -461,7 +465,7 @@ function tryMoveChar_CSRR(cpos, vec, level) {
 
                     }
                 }
-                if(nbpos.top > otherbox.bottom - edgeRadius && nbpos.left > otherbox.right - edgeRadius){//your topleft
+                if(j < 13 && bmap[START_BMP24 + ((14 - 2 - j) * 20 * 3) + i * 3] != 0 && nbpos.top > otherbox.bottom - edgeRadius && nbpos.left > otherbox.right - edgeRadius){//your topleft
                     var edgecenter = {};
                     edgecenter.x = otherbox.right - edgeRadius;
                     edgecenter.y = otherbox.bottom - edgeRadius;
@@ -751,7 +755,7 @@ function checkObectCollisions() {
                 std.printf(" \n\n exitright " + c);
             }
         }
-        if(mapobjects[c].collisionType == 'exitleft' && charpos.x < mo.x + 2.01 && charpos.x + charpos.width > mo.x) {
+        if(mapobjects[c].collisionType == 'exitleft' && charpos.x < mo.x - 0.01 && charpos.x + charpos.width > mo.x) {
             if( charpos.y + 0.01 < mo.y + mo.height + mo.height / 2.0 && charpos.y + charpos.height > mo.y + mo.height / 2.0) {
                 //idsToDelete.push(c); 
                 interruptSideEffectObj = mo;   
