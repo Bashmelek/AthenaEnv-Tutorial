@@ -59,7 +59,7 @@ var bmap = new Uint8Array(abmap);
 
 sprite_lr.drawoffsetx = 0.0;
 
-var charpos = { x: 50.0, y: 50.0, width: 64, height: 64, drawoffsetx: 0.0, drawoffsety: 0.0, isFlipped: false, 
+var charpos = { x: 50.0, y: 50.0, width: 32, height: 32, drawoffsetx: 0.0, drawoffsety: -32.0, isFlipped: false, 
     charsprite: sprite_lr,
     facing: 'r',
     timemove: 0.0,
@@ -86,6 +86,7 @@ sprite_lr.endx = 64;
 sprite_lr.endy = 64;
 sprite_lr.width = 64;
 sprite_lr.height = 64;
+sprite_lr.drawoffsetx = -16.0;
 
 sprite_b.x = 0;
 sprite_b.y = 0;
@@ -93,6 +94,7 @@ sprite_b.endx = 64;
 sprite_b.endy = 64;
 sprite_b.width = 64;
 sprite_b.height = 64;
+sprite_b.drawoffsetx = -16.0;
 
 sprite_f.x = 0;
 sprite_f.y = 0;
@@ -100,6 +102,7 @@ sprite_f.endx = 64;
 sprite_f.endy = 64;
 sprite_f.width = 64;
 sprite_f.height = 64;
+sprite_f.drawoffsetx = -16.0;
 
 tile_lightstone.width = 32;
 tile_lightstone.height = 32;
@@ -881,7 +884,7 @@ function RunInOverMap() {
                 sprite.width = Math.abs(sprite.width);
                 sprite.x = 0;
                 //charpos.x -= sprite.width;
-                sprite.drawoffsetx = 0;
+                sprite.drawoffsetx = -16.0;//0;
                 charpos.isFlipped = false;
             } 
 
@@ -895,7 +898,7 @@ function RunInOverMap() {
             if (!charpos.isFlipped) {
                 sprite.width = -Math.abs(sprite.width);
                 sprite.x = sprite.width;
-                sprite.drawoffsetx = -sprite.width;
+                sprite.drawoffsetx = 48.0;//0;-sprite.width;
                 charpos.isFlipped = true;
             } 
             charpos.facing = 'l';
@@ -955,7 +958,7 @@ function RunInOverMap() {
         }
     }
 
-    sprite.draw(charpos.x + (sprite.drawoffsetx || 0.0), charpos.y + charpos.drawoffsety);
+    sprite.draw(charpos.x + (sprite.drawoffsetx || 0.0), charpos.y + (sprite.drawoffsety || charpos.drawoffsety));
     font.print(10, 10, "Why dost thou continue?");    
 
     charpos.charsprite = sprite;
