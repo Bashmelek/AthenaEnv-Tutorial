@@ -135,17 +135,17 @@ var level_0_pathedSpecials = {
     4: { code: 'chest_w', id: 0 },
     5: { code: 'chest_n', id: 1 },
     6: { code: 'enterzone', id: 0 },
-    7: { code: 'exitzone', id: 0 },
-    8: { code: 'exitzone', id: 1 }
+    7: { code: 'exitzone', id: 1, dest: 0, transition: 'flow' },
+    8: { code: 'exitzone', id: 1, dest: 1, transition: 'flow'  }
 
 };
 
-function loadLevel(levelnum) {
+function loadLevel(exitObj) { //levelnum, transitionType) {
 
     var areamap;
     wmap.mapbits = null;
 
-    switch(levelnum){
+    switch(exitObj.levelid){
         case 0:
         std.printf(" \n i say 0");
             areamap = std.open(resfolder + "/maparea_advdemo0.bmp", "r");// new Image("maparea_demo0.bmp");
@@ -168,13 +168,23 @@ function loadLevel(levelnum) {
 
     bmap = wmap.mapbits;
 
-    std.printf(" \n level is " + levelnum);
-    std.printf(" \n level is " + levelnum);
-    gamestate.levelid = levelnum;
-    std.printf(" \n level is " + levelnum);
+    std.printf(" \n level is " + exitObj.levelid);
+    std.printf(" \n level is " + exitObj.levelid);
+    gamestate.levelid = exitObj.levelid;
+    std.printf(" \n level is " + exitObj.levelid);
     SetupLevelFromImage_Static();
-    charpos.x = 50.0;
-    charpos.y = 50.0; 
+    if(exitObj.transition == 'flow') {
+        if(exitObj.collisionType == 'exitleft'){
+            charpos.x = 20.0 * 32.0 - charpos.width - 0.2;
+        }
+        if(exitObj.collisionType == 'exitright'){
+            charpos.x = 0.2;
+
+        }
+    } else {
+        charpos.x = 50.0;
+        charpos.y = 50.0; 
+    }
 
     gamestate.currentGameMode = gamemode["inovermap"];
     allowMoveChar = true;
@@ -199,13 +209,14 @@ function createMapObject(numcode, level, x, y, i, j) {
     }
     if(ref.code == 'exitzone') {
         newobj.code = ref.code;
-        newobj.levelid = ref.id;
+        newobj.levelid = ref.dest;
         newobj.sprite = null;
         newobj.x = x;
         newobj.y = y;
         newobj.width = 32;
         newobj.height = 32;
         newobj.collisionType = 'mycenter'
+        newobj.transition = ref.transition;
         if(i == 0) {
             newobj.collisionType = 'exitleft';
         }
@@ -213,11 +224,13 @@ function createMapObject(numcode, level, x, y, i, j) {
             newobj.collisionType = 'exitright';
         }
         var refid = newobj.levelid;
+        var transitionType = newobj.transition;
+        var exitObj = newobj;
         std.printf('>>>' + newobj.collisionType);
         std.printf('>>>' + newobj.collisionType);
         newobj.interruptEffect = function() {
             allowMoveChar = false;
-            loadLevel(refid);
+            loadLevel(exitObj);
             interruptEffect = null;
         }
     }
@@ -799,6 +812,8 @@ screen_640x448.height = 448;
 
     var currentSource = tile_dblue_pixels;
 
+    mapobjects = [];
+
     for(var ti = 0; ti < 20; ti++) {
         for(var tj = 0; tj < 14; tj++) {
     
@@ -848,7 +863,7 @@ Timer.getTime(timer)
 std.printf("\ntimestart: " + Timer.getTime(timer).toString());
 std.printf("\ntimestart: " + Timer.getTime(timer).toString());
 //SetupLevelFromImage_Static();
-loadLevel(0);
+loadLevel({ levelid: 0 });
 std.printf("\n timefnis: " + Timer.getTime(timer).toString());
 std.printf("\n timefnis: " + Timer.getTime(timer).toString());
 
