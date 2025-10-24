@@ -34,25 +34,25 @@ const mapobjSprites = {
 
 //const tile_32 = new Image(resfolder + "/tiles_64not.png");
 
-const screen_640x448 = new Image(resfolder + "/blankred_640x448.png");// blankred_64 
+var screen_640x448 = new Image(resfolder + "/blankred_640x448.png");// blankred_64 
 screen_640x448.x = 0;
 screen_640x448.y = 0;
 screen_640x448.endx = 640;
 screen_640x448.endy = 448;
 screen_640x448.width = 640;
 screen_640x448.height = 448;
-let blankscreen_pixels = new Int32Array(screen_640x448.pixels);
+var blankscreen_pixels = new Int32Array(screen_640x448.pixels);
 
 
 
 const START_BMP24 = 54;
 
-let areamap_demo = std.open(resfolder + "/maparea_advdemo0.bmp", "r");// new Image("maparea_demo0.bmp");
+////var areamap_demo = std.open(resfolder + "/maparea_advdemo0.bmp", "r");// new Image("maparea_demo0.bmp");
 
 var abmap = new ArrayBuffer(14 * 20 * 3 + START_BMP24);
-areamap_demo.read(abmap, 0, 14 * 20 * 3 - 0 + START_BMP24)
+////areamap_demo.read(abmap, 0, 14 * 20 * 3 - 0 + START_BMP24)
 var bmap = new Uint8Array(abmap);
-let areamap_pixels = new Int8Array(areamap_demo.pixels);
+//let areamap_pixels = new Int8Array(areamap_demo.pixels);
 
 
 //let largebg = new Image(resfolder + "/Loulou_UomoScreen.png");
@@ -116,7 +116,13 @@ var gamemode = {
 }
 
 var gamestate = {
+    levelid: 0,
     currentGameMode: gamemode["initgame"]
+};
+
+var wmap = {
+    areamap: null,
+    mapbits: null,
 };
 
 
@@ -136,15 +142,50 @@ var level_0_pathedSpecials = {
 
 function loadLevel(levelnum) {
 
+    var areamap;
+    wmap.mapbits = null;
 
+    switch(levelnum){
+        case 0:
+        std.printf(" \n i say 0");
+            areamap = std.open(resfolder + "/maparea_advdemo0.bmp", "r");// new Image("maparea_demo0.bmp");
+            var tempmap = new ArrayBuffer(14 * 20 * 3 + START_BMP24);
+            areamap.read(tempmap, 0, 14 * 20 * 3 - 0 + START_BMP24)
+            wmap.mapbits = new Uint8Array(tempmap);
+        break;
+        case 1:
+        std.printf(" \n i say 11");
+            areamap = std.open(resfolder + "/maparea_advdemo1.bmp", "r");// new Image("maparea_demo0.bmp");
+            var tempmap = new ArrayBuffer(14 * 20 * 3 + START_BMP24);
+            areamap.read(tempmap, 0, 14 * 20 * 3 - 0 + START_BMP24)
+            wmap.mapbits = new Uint8Array(tempmap);
+        break;
+
+
+    }
+
+    bmap = null;
+
+    bmap = wmap.mapbits;
+
+    std.printf(" \n level is " + levelnum);
+    std.printf(" \n level is " + levelnum);
+    gamestate.levelid = levelnum;
+    std.printf(" \n level is " + levelnum);
+    SetupLevelFromImage_Static();
+    charpos.x = 50.0;
+    charpos.y = 50.0; 
+
+    gamestate.currentGameMode = gamemode["inovermap"];
+    allowMoveChar = true;
 }
 
-function createMapObject(numcode, level, x, y) {
+function createMapObject(numcode, level, x, y, i, j) {
 
     var ref = level_0_pathedSpecials[numcode];
-    std.printf("\n" + numcode + "\n");
-    std.printf("\n" + ref + "\n");
-    std.printf("\n" + ref.code + "\n");
+    //std.printf("\n" + numcode + "\n");
+    //std.printf("\n" + ref + "\n");
+    //std.printf("\n" + ref.code + "\n");
 
     var newobj = {};
     if(ref.code == 'doorkey') {
@@ -158,15 +199,26 @@ function createMapObject(numcode, level, x, y) {
     }
     if(ref.code == 'exitzone') {
         newobj.code = ref.code;
+        newobj.levelid = ref.id;
         newobj.sprite = null;
         newobj.x = x;
         newobj.y = y;
         newobj.width = 32;
         newobj.height = 32;
         newobj.collisionType = 'mycenter'
+        if(i == 0) {
+            newobj.collisionType = 'exitleft';
+        }
+        if(i == 19) {
+            newobj.collisionType = 'exitright';
+        }
+        var refid = newobj.levelid;
+        std.printf('>>>' + newobj.collisionType);
+        std.printf('>>>' + newobj.collisionType);
         newobj.interruptEffect = function() {
             allowMoveChar = false;
-            loadLevel(1);
+            loadLevel(refid);
+            interruptEffect = null;
         }
     }
 
@@ -291,7 +343,7 @@ function getCornerIncursionComp(ovec, evec, edgeRadius, edgeToCornerCenter) {
 
 //Continuous Single Resolved Rounded...
 function tryMoveChar_CSRR(cpos, vec, level) {
-    std.printf("\n");
+    //std.printf("\n");
     if(level < 0) {
         return;
     }
@@ -345,7 +397,7 @@ function tryMoveChar_CSRR(cpos, vec, level) {
     var newtopy = Math.floor((cpos.y + vec.y) / 32);//Math.floor(Math.floor((cpos.y + dir.y) / 32) / 20);
     var newboty = Math.floor((cpos.y + cheight + vec.y) / 32);//Math.floor(Math.floor((cpos.y + cpos.height + dir.y) / 32) / 20);
 
-    std.printf('lev ' + level + '  ' + newleftx + "-" + newrightx + ", " + newtopy + "-" + newboty + 'absolute: ' + cpos.x + ' ' + cpos.y);
+    //std.printf('lev ' + level + '  ' + newleftx + "-" + newrightx + ", " + newtopy + "-" + newboty + 'absolute: ' + cpos.x + ' ' + cpos.y);
 
     var istart = ovec.x < 0 ? newrightx : newleftx;
     var i_inc = ovec.x < 0 ? -1 : 1;
@@ -378,9 +430,9 @@ function tryMoveChar_CSRR(cpos, vec, level) {
 
                     var edgeDist = (nbpos.top - edgecenter.y) * (nbpos.top - edgecenter.y) + (nbpos.right - edgecenter.x) * (nbpos.right - edgecenter.x);
                     ignoreHit = edgeDist > (edgeRadius * edgeRadius);
-                    std.printf(" n ");
+                    //std.printf(" n ");
                     if(!ignoreHit){
-                        std.printf(" nside ");
+                        //std.printf(" nside ");
                         var charcorner = { x: cpos.x + cwidth, y: cpos.y };
 
                         var evec = getCornerNewVec(ovec, edgeDist, edgeRadius);
@@ -404,7 +456,7 @@ function tryMoveChar_CSRR(cpos, vec, level) {
                             var comp = getCornerIncursionComp(ovec, evec, edgeRadius, edgeToCornerCenter);
                             afterResVec.y = comp.y;
                             afterResVec.x = comp.x;                            
-                            std.printf(" nresolve " + comp.x + ',' + comp.y);
+                            //std.printf(" nresolve " + comp.x + ',' + comp.y);
                         }
 
                     }
@@ -416,9 +468,9 @@ function tryMoveChar_CSRR(cpos, vec, level) {
 
                     var edgeDist = (nbpos.top - edgecenter.y) * (nbpos.top - edgecenter.y) + (nbpos.left - edgecenter.x) * (nbpos.left - edgecenter.x);
                     ignoreHit = edgeDist > (edgeRadius * edgeRadius);
-                    std.printf(" o ");
+                    //std.printf(" o ");
                     if(!ignoreHit){
-                        std.printf(" oside ");
+                        //std.printf(" oside ");
                         var charcorner = { x: cpos.x, y: cpos.y };
 
                         var evec = getCornerNewVec(ovec, edgeDist, edgeRadius);
@@ -442,7 +494,7 @@ function tryMoveChar_CSRR(cpos, vec, level) {
                             var comp = getCornerIncursionComp(ovec, evec, edgeRadius, edgeToCornerCenter);
                             afterResVec.y = comp.y;
                             afterResVec.x = comp.x;                            
-                            std.printf(" oresolve " + comp.x + ',' + comp.y);
+                            //std.printf(" oresolve " + comp.x + ',' + comp.y);
                         }
 
                     }
@@ -454,9 +506,9 @@ function tryMoveChar_CSRR(cpos, vec, level) {
 
                     var edgeDist = (nbpos.bottom - edgecenter.y) * (nbpos.bottom - edgecenter.y) + (nbpos.left - edgecenter.x) * (nbpos.left - edgecenter.x);
                     ignoreHit = edgeDist > (edgeRadius * edgeRadius);
-                    std.printf(" p ");
+                    //std.printf(" p ");
                     if(!ignoreHit){
-                        std.printf(" pside ");
+                        //std.printf(" pside ");
                         var charcorner = { x: cpos.x, y: cpos.y + cheight };
 
                         var evec = getCornerNewVec(ovec, edgeDist, edgeRadius);
@@ -480,7 +532,7 @@ function tryMoveChar_CSRR(cpos, vec, level) {
                             var comp = getCornerIncursionComp(ovec, evec, edgeRadius, edgeToCornerCenter);
                             afterResVec.y = comp.y;
                             afterResVec.x = comp.x;                            
-                            std.printf(" presolve " + comp.x + ',' + comp.y);
+                            //std.printf(" presolve " + comp.x + ',' + comp.y);
                         }
 
                     }
@@ -492,9 +544,9 @@ function tryMoveChar_CSRR(cpos, vec, level) {
 
                     var edgeDist = (nbpos.bottom - edgecenter.y) * (nbpos.bottom - edgecenter.y) + (nbpos.right - edgecenter.x) * (nbpos.right - edgecenter.x);
                     ignoreHit = edgeDist > (edgeRadius * edgeRadius);
-                    std.printf(" q ");
+                    //std.printf(" q ");
                     if(!ignoreHit){
-                        std.printf(" qside ");
+                        //std.printf(" qside ");
                         var charcorner = { x: cpos.x + cwidth, y: cpos.y + cheight };
 
                         var evec = getCornerNewVec(ovec, edgeDist, edgeRadius);
@@ -518,24 +570,24 @@ function tryMoveChar_CSRR(cpos, vec, level) {
                             var comp = getCornerIncursionComp(ovec, evec, edgeRadius, edgeToCornerCenter);
                             afterResVec.y = comp.y;
                             afterResVec.x = comp.x;                            
-                            std.printf(" qresolve " + comp.x + ',' + comp.y);
+                            //std.printf(" qresolve " + comp.x + ',' + comp.y);
                         }
 
                     }
                 }
 
                 if(ignoreHit) {
-                    std.printf("<edge ");
+                    //std.printf("<edge ");
                     continue;
                 }
                 if(loophit) {
-                    std.printf("<slide ");
+                    //std.printf("<slide ");
                     continue;
                 }
 
                 if(nbpos.left < otherbox.right && olx >= (otherbox.right)){//from right
 
-                    std.printf(" a ");
+                    //std.printf(" a ");
                     loophit = true;
                     
                     hasHit = true;
@@ -550,7 +602,7 @@ function tryMoveChar_CSRR(cpos, vec, level) {
                     afterResVec.y = ovec.y - vec.y; //amount of y left
                 } 
                 if(nbpos.right > otherbox.left && orx <= otherbox.left) {//from left
-                    std.printf(" b ");
+                    //std.printf(" b ");
                     loophit = true;
                     
                     hasHit = true;
@@ -566,7 +618,7 @@ function tryMoveChar_CSRR(cpos, vec, level) {
                 }  
                 if(nbpos.top < otherbox.bottom && oty >= (otherbox.bottom) ){// 
                     
-                    std.printf(" c ");
+                    //std.printf(" c ");
                     loophit = true;
                     
                     hasHit = true;
@@ -582,7 +634,7 @@ function tryMoveChar_CSRR(cpos, vec, level) {
                 } 
                 if(nbpos.bottom > otherbox.top && oby <= otherbox.top) {// 
                     
-                    std.printf(" d ");
+                    //std.printf(" d ");
                     loophit = true;
                     
                     hasHit = true;
@@ -608,31 +660,31 @@ function tryMoveChar_CSRR(cpos, vec, level) {
                         if (otherbox.right - nbpos.left < 3.0) {
 
                             displaced = true;
-                            std.printf(" dis1 ");
+                            //std.printf(" dis1 ");
                             vec.x += Math.abs(nbpos.left - otherbox.right) + 0.1;
                         }
                         if (nbpos.right - otherbox.left < 3.0) {
 
                             displaced = true;
-                            std.printf(" dis2 ");
+                            //std.printf(" dis2 ");
                             vec.x -= nbpos.right - otherbox.left + 0.1;
                         }
                         if (otherbox.bottom - nbpos.top < 3.0) {
 
                             displaced = true;
-                            std.printf(" dis3 ");
+                            //std.printf(" dis3 ");
                             vec.y += Math.abs(nbpos.top - otherbox.bottom) + 0.1;
                         }
                         if (nbpos.bottom - otherbox.top < 3.0) {
 
                             displaced = true;
-                            std.printf(" dis4 ");
+                            //std.printf(" dis4 ");
                             vec.x -= nbpos.bottom - otherbox.top + 0.1;
                         }
 
                         if(!displaced) {
                             hasHit = true;
-                            std.printf(" ee " + i + ',' + j + ' ' + level + ' in ' + nbpos.left + ' ' + nbpos.top);
+                            ////std.printf(" ee " + i + ',' + j + ' ' + level + ' in ' + nbpos.left + ' ' + nbpos.top);
                             vec.x = 0.0;
                             vec.y = 0.0;
                             
@@ -642,7 +694,7 @@ function tryMoveChar_CSRR(cpos, vec, level) {
                     }
                 }
 
-                std.printf(" < hit at level " + level + '  ' + vec.x + ' ' + vec.y + '   ');
+                ////std.printf(" < hit at level " + level + '  ' + vec.x + ' ' + vec.y + '   ');
             }
         }
     }
@@ -663,7 +715,7 @@ function tryMoveChar_CSRR(cpos, vec, level) {
     // vec.x = eadjustedDest.x - cpos.x;
     // vec.y = eadjustedDest.y - cpos.y;
 
-    std.printf("\n" + vec.x + ' ' + vec.y);
+    ////std.printf("\n" + vec.x + ' ' + vec.y);
     cpos.x += vec.x;
     cpos.y += vec.y;
 
@@ -688,8 +740,22 @@ function checkObectCollisions() {
         if(mapobjects[c].collisionType == 'mycenter' && charpos.x < mo.x + mo.width / 2.0 && charpos.x + charpos.width > mo.x + mo.width / 2.0) {
             if( charpos.y + 0.01 < mo.y + mo.height + mo.height / 2.0 && charpos.y + charpos.height > mo.y + mo.height / 2.0) {
                 //idsToDelete.push(c); 
-                interruptSideEffectObj = mo;   
+                //interruptSideEffectObj = mo;   
                 std.printf(" \n\n contains cneter " + c);
+            }
+        }
+        if(mapobjects[c].collisionType == 'exitright' && charpos.x < mo.x + mo.width && charpos.x + charpos.width > mo.x + mo.width + 0.01) {
+            if( charpos.y + 0.01 < mo.y + mo.height + mo.height / 2.0 && charpos.y + charpos.height > mo.y + mo.height / 2.0) {
+                //idsToDelete.push(c); 
+                interruptSideEffectObj = mo;   
+                std.printf(" \n\n exitright " + c);
+            }
+        }
+        if(mapobjects[c].collisionType == 'exitleft' && charpos.x < mo.x + 2.01 && charpos.x + charpos.width > mo.x) {
+            if( charpos.y + 0.01 < mo.y + mo.height + mo.height / 2.0 && charpos.y + charpos.height > mo.y + mo.height / 2.0) {
+                //idsToDelete.push(c); 
+                interruptSideEffectObj = mo;   
+                std.printf(" \n\n exitleft " + c);
             }
         }
     }
@@ -712,9 +778,20 @@ function SetupLevelFromImage_Static(){
     let tile_dblue_pixels = new Int32Array(tile_dblue.pixels);// BigInt64Array   Int32Array
     let tile_lightstone_pixels = new Int32Array(tile_lightstone.pixels);//
 
-    var levelid = 0;
+    var mapbits = bmap;
+
+  screen_640x448 = new Image(resfolder + "/blankred_640x448.png");// blankred_64 
+screen_640x448.x = 0;
+screen_640x448.y = 0;
+screen_640x448.endx = 640;
+screen_640x448.endy = 448;
+screen_640x448.width = 640;
+screen_640x448.height = 448;
+    blankscreen_pixels = new Int32Array(screen_640x448.pixels);
+
+    //var levelid = 0;
  
-    std.printf("\n\nHEYEYE HEY " + blankscreen_pixels.length + "\n\n");
+    //std.printf("\n\nHEYEYE HEY " + blankscreen_pixels.length + "\n\n");
 
     var currentSource = tile_dblue_pixels;
 
@@ -722,16 +799,17 @@ function SetupLevelFromImage_Static(){
         for(var tj = 0; tj < 14; tj++) {
     
             var p = START_BMP24 + ((14 - 1 - tj) * 20 * 3) + ti * 3;
-            if (bmap[p + 0] == 0) {
+            if (mapbits[p + 0] == 0) {
                 currentSource = tile_dblue_pixels;
             }
-            if (bmap[p + 0] == 255) { //-1
+            if (mapbits[p + 0] == 255) { //-1
                 currentSource = tile_lightstone_pixels;
 
-                if(bmap[p + 2] > 0){
+                if(mapbits[p + 2] > 0){
                     // var newmapojb = {};
                     // mapobjects.push(newmapojb);
-                    createMapObject(bmap[p + 2], levelid, ti * 32, tj * 32);
+                    std.printf("\n\nmaking obj\n\n");
+                    createMapObject(mapbits[p + 2], gamestate.levelid, ti * 32, tj * 32, ti, tj);
                 }
             } 
 
@@ -745,8 +823,13 @@ function SetupLevelFromImage_Static(){
                 for(var bj = 0; bj < 32; bj++) { // while(bj--) {//32    for(var bj = 0; bj < 32; bj++) { //
                     var b = offsetbi + bj;
                     var sb = (offsetsbi +  bj);//(bj % 64));
+                    //if(gamestate.levelid==1) {
                     blankscreen_pixels[b] = currentSource[sb];
+                    //} else {  
+                    //blankscreen_pixels[b] = tile_lightstone_pixels[sb];
                 }
+                    //std.printf(gamestate.levelid);
+                //}
             }
 
         }
@@ -756,7 +839,14 @@ function SetupLevelFromImage_Static(){
 }
 
 //setup bg
-SetupLevelFromImage_Static();
+let timer = Timer.new()
+Timer.getTime(timer)
+std.printf("\ntimestart: " + Timer.getTime(timer).toString());
+std.printf("\ntimestart: " + Timer.getTime(timer).toString());
+//SetupLevelFromImage_Static();
+loadLevel(0);
+std.printf("\n timefnis: " + Timer.getTime(timer).toString());
+std.printf("\n timefnis: " + Timer.getTime(timer).toString());
 
 function RunInOverMap() {
     var sprite = charpos.charsprite;
@@ -909,9 +999,15 @@ Screen.display(() => {
             gamestate.currentGameMode = gamemode["inovermap"];
         break;
         case gamemode["inovermap"]: 
+    //std.printf("\n xxx000: " + Timer.getTime(timer).toString());
+    //std.printf("\n xxx111: " + Timer.getTime(timer).toString());
             RunInOverMap();
+            //std.printf("\n xxx222: " + Timer.getTime(timer).toString());
+            //std.printf("\n xxx333: " + Timer.getTime(timer).toString());
         break;
         case gamemode["initgame"]: 
+        //std.printf("\n timeinitgame: " + Timer.getTime(timer).toString());
+        //std.printf("\n timeinitgame: " + Timer.getTime(timer).toString());
             gamestate.currentGameMode = gamemode["inovermap"];
         break;
 
