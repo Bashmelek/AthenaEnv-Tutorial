@@ -1,9 +1,7 @@
 const font = new Font("default");
+;
 
-//Screen.setFrameCounter(true);
-//Screen.setVSync(false);
-
-const resfolder = "customresources" //res   customresources
+const resfolder = "res" //res   customresources
 
 const videoMode = Screen.getMode();
 videoMode.width = 640;
@@ -20,6 +18,7 @@ const p2Pad = Pads.get(1);
 
 // Change root folder to "Sophia"
 os.chdir("Sophia");
+const mylogo = new Image(resfolder + "/makarioslogo2.png");// Loulou_UomoScreen   makarioslogo1
 
 const tile_lightstone = new Image(resfolder + "/tiles_64lightstone.png");//tiles_64not   tiles_32lightstone
 //const sprite = new Image(resfolder + "/tiles_64not.png");
@@ -34,14 +33,14 @@ const mapobjSprites = {
 
 //const tile_32 = new Image(resfolder + "/tiles_64not.png");
 
-var screen_640x448 = new Image(resfolder + "/blankred_640x448.png");// blankred_64 
-screen_640x448.x = 0;
-screen_640x448.y = 0;
-screen_640x448.endx = 640;
-screen_640x448.endy = 448;
-screen_640x448.width = 640;
-screen_640x448.height = 448;
-var blankscreen_pixels = new Int32Array(screen_640x448.pixels);
+var screen_640x448 = null;//new Image(resfolder + "/blankred_640x448.png");// blankred_64 
+// screen_640x448.x = 0;
+// screen_640x448.y = 0;
+// screen_640x448.endx = 640;
+// screen_640x448.endy = 448;
+// screen_640x448.width = 640;
+// screen_640x448.height = 448;
+//var blankscreen_pixels = null;//new Int32Array(screen_640x448.pixels);
 
 
 
@@ -54,8 +53,7 @@ var abmap = new ArrayBuffer(14 * 20 * 3 + START_BMP24);
 var bmap = new Uint8Array(abmap);
 //let areamap_pixels = new Int8Array(areamap_demo.pixels);
 
-
-//let largebg = new Image(resfolder + "/Loulou_UomoScreen.png");
+ 
 
 sprite_lr.drawoffsetx = 0.0;
 
@@ -69,16 +67,7 @@ var mapobjects = new Array();
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Screen.getMode(); 
 
-
-//largebg.width = 640;
-//largebg.height = 448;
-
-// tile_32.x = 0;
-// tile_32.y = 0;
-// tile_32.endx = 32;
-// tile_32.endy = 32;
-// tile_32.width = 32;
-// tile_32.height = 32;
+ 
 
 sprite_lr.x = 0;
 sprite_lr.y = 0;
@@ -123,11 +112,15 @@ var gamestate = {
     currentGameMode: gamemode["initgame"]
 };
 
-var wmap = {
+var gameLoad = {
+
     areamap: null,
     mapbits: null,
-};
+    currentLevelbg: null,
 
+    useImages: {}
+};
+ 
 
 
 var level_0_pathedSpecials = {
@@ -146,7 +139,7 @@ var level_0_pathedSpecials = {
 function loadLevel(exitObj) { //levelnum, transitionType) {
 
     var areamap;
-    wmap.mapbits = null;
+    gameLoad.mapbits = null;
 
     switch(exitObj.levelid){
         case 0:
@@ -154,14 +147,14 @@ function loadLevel(exitObj) { //levelnum, transitionType) {
             areamap = std.open(resfolder + "/maparea_advdemo0.bmp", "r");// new Image("maparea_demo0.bmp");
             var tempmap = new ArrayBuffer(14 * 20 * 3 + START_BMP24);
             areamap.read(tempmap, 0, 14 * 20 * 3 - 0 + START_BMP24)
-            wmap.mapbits = new Uint8Array(tempmap);
+            gameLoad.mapbits = new Uint8Array(tempmap);
         break;
         case 1:
         std.printf(" \n i say 11");
             areamap = std.open(resfolder + "/maparea_advdemo1.bmp", "r");// new Image("maparea_demo0.bmp");
             var tempmap = new ArrayBuffer(14 * 20 * 3 + START_BMP24);
             areamap.read(tempmap, 0, 14 * 20 * 3 - 0 + START_BMP24)
-            wmap.mapbits = new Uint8Array(tempmap);
+            gameLoad.mapbits = new Uint8Array(tempmap);
         break;
 
 
@@ -169,7 +162,7 @@ function loadLevel(exitObj) { //levelnum, transitionType) {
 
     bmap = null;
 
-    bmap = wmap.mapbits;
+    bmap = gameLoad.mapbits;
 
     std.printf(" \n level is " + exitObj.levelid);
     std.printf(" \n level is " + exitObj.levelid);
@@ -365,22 +358,7 @@ function tryMoveChar_CSRR(cpos, vec, level) {
     }
 
     const edgeRadius = 16.0;
-
-    // var adjustedDest = { x: cpos.x + vec.x, y: cpos.y + vec.y }
-    // if(vec.x > 0) {
-    //     adjustedDest.x = Math.floor(adjustedDest.x);
-    // }
-    // else if(vec.x < 0){
-    //     adjustedDest.x = Math.ceil(adjustedDest.x);
-    // }
-    // if(vec.y > 0) {
-    //     adjustedDest.y = Math.floor(adjustedDest.y);
-    // }
-    // else if(vec.y < 0){
-    //     adjustedDest.y = Math.ceil(adjustedDest.y);
-    // }
-    // vec.x = adjustedDest.x - cpos.x;
-    // vec.y = adjustedDest.y - cpos.y;
+    
 
     var ovec = { x: vec.x, y: vec.y };
     var hasHit = false;
@@ -398,10 +376,6 @@ function tryMoveChar_CSRR(cpos, vec, level) {
     var oty = cpos.y;
     var oby = cpos.y + cheight;
 
-    //var nlx = (cpos.x + vec.x);
-    //var nrx = cpos.x + cwidth + vec.x;
-    //var nty = (cpos.y + vec.y);
-    //var nby = cpos.y + cheight + vec.y;
     var nbpos = {};
     nbpos.left = (cpos.x + vec.x);
     nbpos.right = cpos.x + cwidth + vec.x;
@@ -719,23 +693,7 @@ function tryMoveChar_CSRR(cpos, vec, level) {
         }
     }
 
-    // var eadjustedDest = { x: cpos.x + vec.x, y: cpos.y + vec.y }
-    // if(ovec.x > 0) {
-    //     eadjustedDest.x = Math.floor(eadjustedDest.x);
-    // }
-    // else if(ovec.x < 0){
-    //     eadjustedDest.x = Math.ceil(eadjustedDest.x);
-    // }
-    // if(ovec.y > 0) {
-    //     eadjustedDest.y = Math.floor(eadjustedDest.y);
-    // }
-    // else if(ovec.y < 0){
-    //     eadjustedDest.y = Math.ceil(eadjustedDest.y);
-    // }
-    // vec.x = eadjustedDest.x - cpos.x;
-    // vec.y = eadjustedDest.y - cpos.y;
-
-    ////std.printf("\n" + vec.x + ' ' + vec.y);
+    
     cpos.x += vec.x;
     cpos.y += vec.y;
 
@@ -789,17 +747,22 @@ function checkObectCollisions() {
     }
 }
 
-function SetupLevelFromImage_Static(){
+var backup = null;
+var ruincount = 0;
 
+function SetupLevelFromImage_Static() {
 //
 
     //const work_640x448 = new Image(resfolder + "/blank_640x448.png");// blankred_64 
     //let work_pixels = new Int8Array(work_640x448.pixels);
-    let tile_dblue_pixels = new Int32Array(tile_dblue.pixels);// BigInt64Array   Int32Array
-    let tile_lightstone_pixels = new Int32Array(tile_lightstone.pixels);//
+    const tile_dblue_pixels = new Int32Array(tile_dblue.pixels);// BigInt64Array   Int32Array
+    const tile_lightstone_pixels = new Int32Array(tile_lightstone.pixels);//
 
-    var mapbits = bmap;
+    const mapbits = bmap;
 
+    var img = null;
+
+    if(!screen_640x448) {
   screen_640x448 = new Image(resfolder + "/blankred_640x448.png");// blankred_64 
 screen_640x448.x = 0;
 screen_640x448.y = 0;
@@ -807,7 +770,26 @@ screen_640x448.endx = 640;
 screen_640x448.endy = 448;
 screen_640x448.width = 640;
 screen_640x448.height = 448;
-    blankscreen_pixels = new Int32Array(screen_640x448.pixels);
+
+  backup = new Image(resfolder + "/blankred_640x448.png");// blankred_64 
+backup.x = 0;
+backup.y = 0;
+backup.endx = 640;
+backup.endy = 448;
+backup.width = 640;
+backup.height = 448;
+
+        img = screen_640x448;
+    } else {
+        var tempimg = screen_640x448;
+        screen_640x448 = backup;
+        img = screen_640x448;
+        backup = tempimg;
+        ruincount++;
+    }
+    //screen_640x448.filter = LINEAR;
+     
+    const blankscreen_pixels = new Int32Array(screen_640x448.pixels);
 
     //var levelid = 0;
  
@@ -824,7 +806,7 @@ screen_640x448.height = 448;
             if (mapbits[p + 0] == 0) {
                 currentSource = tile_dblue_pixels;
             }
-            if (mapbits[p + 0] == 255) { //-1
+            if (mapbits[p + 0] == 255 || (ruincount == 3)) { //-1
                 currentSource = tile_lightstone_pixels;
 
                 if(mapbits[p + 2] > 0){
@@ -858,17 +840,14 @@ screen_640x448.height = 448;
     }
 
 
+    gameLoad.currentLevelbg = screen_640x448;
+
 }
 
 //setup bg
 let timer = Timer.new()
 Timer.getTime(timer)
-std.printf("\ntimestart: " + Timer.getTime(timer).toString());
-std.printf("\ntimestart: " + Timer.getTime(timer).toString());
-//SetupLevelFromImage_Static();
-loadLevel({ levelid: 0 });
-std.printf("\n timefnis: " + Timer.getTime(timer).toString());
-std.printf("\n timefnis: " + Timer.getTime(timer).toString());
+
 
 function RunInOverMap() {
     var sprite = charpos.charsprite;
@@ -949,7 +928,7 @@ function RunInOverMap() {
     }
     
     
-    screen_640x448.draw(0.0, 0.0);//tile_dblue   screen_640x448
+    gameLoad.currentLevelbg.draw(0.0, 0.0);//tile_dblue   screen_640x448
 
     for(let c = 0; c < mapobjects.length; c++) {
         var mo = mapobjects[c];
@@ -1028,9 +1007,14 @@ Screen.display(() => {
             //std.printf("\n xxx333: " + Timer.getTime(timer).toString());
         break;
         case gamemode["initgame"]: 
+
+            mylogo.draw(80.0, 84.0);
+            if(framecounter > 1){
+                loadLevel({ levelid: 0 });
+                gamestate.currentGameMode = gamemode["inovermap"];
+            }
         //std.printf("\n timeinitgame: " + Timer.getTime(timer).toString());
         //std.printf("\n timeinitgame: " + Timer.getTime(timer).toString());
-            gamestate.currentGameMode = gamemode["inovermap"];
         break;
 
     }
