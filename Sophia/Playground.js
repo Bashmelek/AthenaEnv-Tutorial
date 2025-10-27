@@ -120,7 +120,59 @@ var gameLoad = {
 
     useImages: {}
 };
- 
+
+ var initLoad = function() {
+    //new Image(resfolder + "/blankred_640x448.png");// blankred_64 
+
+    for(var i = 0; i < 4; i++){
+        var imgID = "img" + i.toString();
+        gameLoad.useImages[imgID] = {};
+        var useImage = gameLoad.useImages[imgID];
+    
+        useImage.sprite = new Image(resfolder + "/blankred_640x448.png");
+
+        var img = useImage.sprite;  
+        img.x = 0;
+        img.y = 0;
+        img.endx = 640;
+        img.endy = 448;
+        img.width = 640;
+        img.height = 448;
+
+        useImage.id = i;
+        useImage.aging = 12;
+        useImage.levelnum = null;
+        useImage.isLoaded = false;
+        useImage.icurrentLoad = 0;
+        useImage.jcurrentLoad = 0;
+    }
+
+    gameLoad.useImages.currentBG = null;
+    gameLoad.useImages.nextFreeID = 0;
+ };
+
+ var getNextFreeBG = function() {
+
+    var currentNextID = gameLoad.useImages.nextFreeID;
+    var freeimg = gameLoad.useImages["img" + currentNextID.toString()];
+    freeimg.aging = 0;
+
+    var nextFreeID = -1;
+    var currentAging = -1;
+    for(var i = 0; i < 4; i++) {
+        var nextimg = gameLoad.useImages["img" + i.toString()];
+        if(nextimg.id != currentNextID) {
+            nextimg.aging++;
+            if(nextimg.aging > currentAging){
+                nextFreeID = nextimg.id;
+                currentAging = nextimg.aging;
+            }
+        }
+    }
+    gameLoad.useImages.nextFreeID = nextFreeID;
+
+    return freeimg;
+ }
 
 
 var level_0_pathedSpecials = {
@@ -762,34 +814,38 @@ function SetupLevelFromImage_Static() {
 
     var img = null;
 
-    if(!screen_640x448) {
-  screen_640x448 = new Image(resfolder + "/blankred_640x448.png");// blankred_64 
-screen_640x448.x = 0;
-screen_640x448.y = 0;
-screen_640x448.endx = 640;
-screen_640x448.endy = 448;
-screen_640x448.width = 640;
-screen_640x448.height = 448;
-
-  backup = new Image(resfolder + "/blankred_640x448.png");// blankred_64 
-backup.x = 0;
-backup.y = 0;
-backup.endx = 640;
-backup.endy = 448;
-backup.width = 640;
-backup.height = 448;
-
-        img = screen_640x448;
-    } else {
-        var tempimg = screen_640x448;
-        screen_640x448 = backup;
-        img = screen_640x448;
-        backup = tempimg;
-        ruincount++;
-    }
+        //     if(!screen_640x448) {
+        //   screen_640x448 = new Image(resfolder + "/blankred_640x448.png");// blankred_64 
+        // screen_640x448.x = 0;
+        // screen_640x448.y = 0;
+        // screen_640x448.endx = 640;
+        // screen_640x448.endy = 448;
+        // screen_640x448.width = 640;
+        // screen_640x448.height = 448;
+            // 
+        //   backup = new Image(resfolder + "/blankred_640x448.png");// blankred_64 
+        // backup.x = 0;
+        // backup.y = 0;
+        // backup.endx = 640;
+        // backup.endy = 448;
+        // backup.width = 640;
+        // backup.height = 448;
+            // 
+        //         img = screen_640x448;
+        //     } else {
+        //         var tempimg = screen_640x448;
+        //         screen_640x448 = backup;
+        //         img = screen_640x448;
+        //         backup = tempimg;
+        //         ruincount++;
+        //     }
     //screen_640x448.filter = LINEAR;
+
+    var freeimage = getNextFreeBG();
+    var freeimageSprite = freeimage.sprite;
      
-    const blankscreen_pixels = new Int32Array(screen_640x448.pixels);
+    const blankscreen_pixels = new Int32Array(freeimageSprite.pixels);
+    const imageAlreadyLoaded = freeimage.levelnum == gamestate.levelid && freeimage.isLoaded;
 
     //var levelid = 0;
  
@@ -817,30 +873,34 @@ backup.height = 448;
                 }
             } 
 
-            var startbyte = tj * 32 * 640 + ti * 32;//tj * 32 * 640 * 4 + ti * 32 * 4;
+            if(!imageAlreadyLoaded){
+                var startbyte = tj * 32 * 640 + ti * 32;//tj * 32 * 640 * 4 + ti * 32 * 4;
 
-            for(var bi = 0; bi < 32; bi++) {
-                var offsetbi = startbyte + (bi * 640);
-                var offsetsbi = bi << 6 ;//* 64;// bi % 64 * 64;
-                
-                //var bj = 32;
-                for(var bj = 0; bj < 32; bj++) { // while(bj--) {//32    for(var bj = 0; bj < 32; bj++) { //
-                    var b = offsetbi + bj;
-                    var sb = (offsetsbi +  bj);//(bj % 64));
-                    //if(gamestate.levelid==1) {
-                    blankscreen_pixels[b] = currentSource[sb];
-                    //} else {  
-                    //blankscreen_pixels[b] = tile_lightstone_pixels[sb];
+                for(var bi = 0; bi < 32; bi++) {
+                    var offsetbi = startbyte + (bi * 640);
+                    var offsetsbi = bi << 6 ;//* 64;// bi % 64 * 64;
+                    
+                    //var bj = 32;
+                    for(var bj = 0; bj < 32; bj++) { // while(bj--) {//32    for(var bj = 0; bj < 32; bj++) { //
+                        var b = offsetbi + bj;
+                        var sb = (offsetsbi +  bj);//(bj % 64));
+                        //if(gamestate.levelid==1) {
+                        blankscreen_pixels[b] = currentSource[sb];
+                        //} else {  
+                        //blankscreen_pixels[b] = tile_lightstone_pixels[sb];
+                    }
+                        //std.printf(gamestate.levelid);
+                    //}
                 }
-                    //std.printf(gamestate.levelid);
-                //}
             }
 
         }
     }
 
-
-    gameLoad.currentLevelbg = screen_640x448;
+    freeimage.levelnum = gamestate.levelid
+    freeimage.isLoaded = true;
+    gameLoad.useImages.currentBG = freeimage;
+    gameLoad.currentLevelbg = freeimage.sprite;
 
 }
 
@@ -1009,6 +1069,9 @@ Screen.display(() => {
         case gamemode["initgame"]: 
 
             mylogo.draw(80.0, 84.0);
+            if(framecounter == 1){
+                initLoad();
+            }
             if(framecounter > 1){
                 loadLevel({ levelid: 0 });
                 gamestate.currentGameMode = gamemode["inovermap"];
