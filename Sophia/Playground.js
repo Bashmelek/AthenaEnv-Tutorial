@@ -118,13 +118,16 @@ var gameLoad = {
     mapbits: null,
     currentLevelbg: null,
 
-    useImages: {}
+    useImages: {},
+    queuedLevels: []
 };
+
+const NUM_CACHED_LEVELS = 10;
 
  var initLoad = function() {
     //new Image(resfolder + "/blankred_640x448.png");// blankred_64 
 
-    for(var i = 0; i < 4; i++){
+    for(var i = 0; i < NUM_CACHED_LEVELS; i++){
         var imgID = "img" + i.toString();
         gameLoad.useImages[imgID] = {};
         var useImage = gameLoad.useImages[imgID];
@@ -159,7 +162,7 @@ var gameLoad = {
 
     var nextFreeID = -1;
     var currentAging = -1;
-    for(var i = 0; i < 4; i++) {
+    for(var i = 0; i < NUM_CACHED_LEVELS; i++) {
         var nextimg = gameLoad.useImages["img" + i.toString()];
         if(nextimg.id != currentNextID) {
             nextimg.aging++;
@@ -172,7 +175,22 @@ var gameLoad = {
     gameLoad.useImages.nextFreeID = nextFreeID;
 
     return freeimg;
- }
+ };
+
+ var tryGetLevelBg = function(levelnum) {
+    
+    var levelBg = null
+
+    for(var c = 0; c < NUM_CACHED_LEVELS; c++) {
+        var cimg = gameLoad.useImages["img" + c.toString()];
+
+        if(cimg.id == levelnum & cimg.isLoaded){
+            levelBg = cimg;
+        }
+    }
+
+    return levelBg;
+ };
 
 
 var level_0_pathedSpecials = {
@@ -236,7 +254,11 @@ function loadLevel(exitObj) { //levelnum, transitionType) {
 
     gamestate.currentGameMode = gamemode["inovermap"];
     allowMoveChar = true;
-}
+};
+
+var tryQueueLevel(levelnum) {
+
+};
 
 function createMapObject(numcode, level, x, y, i, j) {
 
@@ -841,7 +863,11 @@ function SetupLevelFromImage_Static() {
         //     }
     //screen_640x448.filter = LINEAR;
 
-    var freeimage = getNextFreeBG();
+    var freeimage = tryGetLevelBg(gamestate.levelid);
+    
+    if(freeimage == null) {
+        freeimage = getNextFreeBG();
+    }
     var freeimageSprite = freeimage.sprite;
      
     const blankscreen_pixels = new Int32Array(freeimageSprite.pixels);
