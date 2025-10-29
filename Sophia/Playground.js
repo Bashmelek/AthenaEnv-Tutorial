@@ -148,6 +148,7 @@ const NUM_CACHED_LEVELS = 10;
         useImage.isLoaded = false;
         useImage.icurrentLoad = 0;
         useImage.jcurrentLoad = 0;
+        useImage.mapbits = null;
     }
 
     gameLoad.useImages.currentBG = null;
@@ -210,6 +211,7 @@ function loadLevel(exitObj) { //levelnum, transitionType) {
 
     var areamap;
     gameLoad.mapbits = null;
+    gameLoad.queuedLevels = [];
 
     switch(exitObj.levelid){
         case 0:
@@ -256,8 +258,24 @@ function loadLevel(exitObj) { //levelnum, transitionType) {
     allowMoveChar = true;
 };
 
-var tryQueueLevel(levelnum) {
+var tryQueueLevel = function(levelnum) {
+    var alreadyHandled = false;
 
+    var alreadyLoadedBG = tryGetLevelBg(levelnum);
+
+    if(alreadyLoadedBG != null){
+        return;
+    }
+
+    for(var i = 0; i < gameLoad.queuedLevels.length; i++) {
+        if(gameLoad.queuedLevels[i].levelnum == levelnum){
+            return;
+        }
+    }
+
+    if(!alreadyHandled) {
+        gameLoad.queuedLevels.push({levelnum: levelnum, useImageID: -1});
+    }
 };
 
 function createMapObject(numcode, level, x, y, i, j) {
@@ -303,6 +321,7 @@ function createMapObject(numcode, level, x, y, i, j) {
             loadLevel(exitObj);
             interruptEffect = null;
         }
+        tryQueueLevel(newobj.levelid);
     }
 
     mapobjects.push(newobj);
@@ -822,7 +841,119 @@ function checkObectCollisions() {
 }
 
 var backup = null;
-var ruincount = 0;
+
+
+
+function SetupLevelFromImage_Lazy(lazyloadobj) {
+//
+
+    //const work_640x448 = new Image(resfolder + "/blank_640x448.png");// blankred_64 
+    //let work_pixels = new Int8Array(work_640x448.pixels);
+    const tile_dblue_pixels = new Int32Array(tile_dblue.pixels);// BigInt64Array   Int32Array
+    const tile_lightstone_pixels = new Int32Array(tile_lightstone.pixels);//
+
+    //const mapbits = bmap;
+
+    var img = null;
+
+    var queueImage = tryGetLevelBg(lazyloadobj.levelnum);
+    if(queueImage != null){
+        return;
+    }
+ 
+    
+    if(lazyloadobj.useImageID >= 0) {
+        queueImage = gameLoad.useImages["img" + lazyloadobj.useImageID];
+
+    } else {
+        queueImage = getNextFreeBG();
+
+        
+        var areamap = std.open(resfolder + "/maparea_advdemo" + lazyloadobj.levelnum + ".bmp", "r");// new Image("maparea_demo0.bmp");
+        var tempmap = new ArrayBuffer(14 * 20 * 3 + START_BMP24);
+        areamap.read(tempmap, 0, 14 * 20 * 3 - 0 + START_BMP24)
+        queueImage.mapbits = new Uint8Array(tempmap);
+
+        lazyloadobj.useImageID = queueImage.id;
+        queueImage.levelnum = lazyloadobj.levelnum;
+        queueImage.isLoaded = false;
+        queueImage.icurrentLoad = 0;
+        queueImage.jcurrentLoad = 0;
+    }
+    var queueImageSprite = queueImage.sprite;
+     
+    const blankscreen_pixels = new Int32Array(queueImageSprite.pixels);
+    const imageAlreadyLoaded = queueImage.levelnum == gamestate.levelid && queueImage.isLoaded;
+    const qmapbits = queueImage.mapbits;
+
+
+    var currentSource = tile_dblue_pixels;
+
+    //mapobjects = [];
+    //return;
+
+    const MAX_QUEUED_CELLS = 3;
+    var queuedCellsProcessed = 0;
+
+    var startti = queueImage.icurrentLoad;
+    var starttj = queueImage.jcurrentLoad;
+
+    for(var ti = startti; ti < 20; ti++) {
+        for(var tj = starttj; tj < 14; tj++) {
+    
+            var p = START_BMP24 + ((14 - 1 - tj) * 20 * 3) + ti * 3;
+            if (qmapbits[p + 0] == 0) {
+                currentSource = tile_dblue_pixels;
+            }
+            if (qmapbits[p + 0] == 255) { //-1
+                currentSource = tile_lightstone_pixels;
+
+                // if(mapbits[p + 2] > 0){
+                //     std.printf("\n\nmaking obj\n\n");
+                //     createMapObject(mapbits[p + 2], gamestate.levelid, ti * 32, tj * 32, ti, tj);
+                // }
+            } 
+
+            if(!imageAlreadyLoaded){
+                var startbyte = tj * 32 * 640 + ti * 32;//tj * 32 * 640 * 4 + ti * 32 * 4;
+
+                for(var bi = 0; bi < 32; bi++) {
+                    var offsetbi = startbyte + (bi * 640);
+                    var offsetsbi = bi << 6 ;//* 64;// bi % 64 * 64;
+                    
+                    //var bj = 32;
+                    for(var bj = 0; bj < 32; bj++) { // while(bj--) {//32    for(var bj = 0; bj < 32; bj++) { //
+                        var b = offsetbi + bj;
+                        var sb = (offsetsbi +  bj);//(bj % 64));
+                        //if(gamestate.levelid==1) {
+                        blankscreen_pixels[b] = currentSource[sb];
+                    }
+                }
+            }
+
+            queuedCellsProcessed++;
+            if(queuedCellsProcessed >= MAX_QUEUED_CELLS ) {
+                
+                queueImage.icurrentLoad = ti;
+                queueImage.jcurrentLoad = tj;
+
+                if(ti < 19 || tj < 13) {
+                    std.printf("\n returned at: " + queueImage.icurrentLoad + ' :: ' + queueImage.jcurrentLoad);
+                    return;
+                }
+            }
+
+        }
+
+        starttj = 0;
+    }
+
+    //queueImage.levelnum = gamestate.levelid
+    queueImage.isLoaded = true;
+    //gameLoad.useImages.currentBG = queueImage;
+    //gameLoad.currentLevelbg = queueImage.sprite;
+
+}
 
 function SetupLevelFromImage_Static() {
 //
@@ -888,7 +1019,7 @@ function SetupLevelFromImage_Static() {
             if (mapbits[p + 0] == 0) {
                 currentSource = tile_dblue_pixels;
             }
-            if (mapbits[p + 0] == 255 || (ruincount == 3)) { //-1
+            if (mapbits[p + 0] == 255) { //-1
                 currentSource = tile_lightstone_pixels;
 
                 if(mapbits[p + 2] > 0){
@@ -937,6 +1068,18 @@ Timer.getTime(timer)
 
 function RunInOverMap() {
     var sprite = charpos.charsprite;
+    
+    for(var q = 0; q < gameLoad.queuedLevels.length; q++) {
+        std.printf("\n queue size is: " + gameLoad.queuedLevels.length);
+        SetupLevelFromImage_Lazy(gameLoad.queuedLevels[q]);
+    }
+    for(var d = 0; d < gameLoad.queuedLevels.length; d++) {
+        var queuedLevObj = gameLoad.queuedLevels[d];
+        if(queuedLevObj.useImageID >= 0 && gameLoad.useImages["img" + queuedLevObj.useImageID].isLoaded) {
+            gameLoad.queuedLevels.splice(d, 1);
+        }
+        //SetupLevelFromImage_Lazy(gameLoad.queuedLevels[q]);
+    }
 
     if(allowMoveChar) {
 
