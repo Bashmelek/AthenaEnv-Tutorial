@@ -111,7 +111,11 @@ var gamemode = {
 var gamestate = {
     levelid: 0,
     currentGameMode: gamemode["initgame"],
-    levelstates: {}
+    levelstates: {},
+    char: {
+        numkeys: 0,
+        interactableObj: null
+    }
 };
 
 var gameLoad = {
@@ -244,6 +248,8 @@ function loadLevel(exitObj) { //levelnum, transitionType) {
     std.printf(" \n level is " + exitObj.levelid);
     std.printf(" \n level is " + exitObj.levelid);
     gamestate.levelid = exitObj.levelid;
+
+    gamestate.char.interactableObj = null;
 
     var levelstate = gamestate.levelstates["ls" + gamestate.levelid];
     if(levelstate == null) {
