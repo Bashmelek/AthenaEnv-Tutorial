@@ -28,7 +28,8 @@ const sprite_b = new Image(resfolder + "/dogchar64clear_b.png");
 const tile_dblue = new Image(resfolder + "/tiles_64darkerblue.png");
 
 const mapobjSprites = {
-    doorkey: new Image(resfolder + "/doorkey32.png")
+    doorkey: new Image(resfolder + "/doorkey32.png"),
+    eastdoor: new Image(resfolder + "/eastdoor_32.png"),
 };
 
 //const tile_32 = new Image(resfolder + "/tiles_64not.png");
@@ -109,7 +110,8 @@ var gamemode = {
 
 var gamestate = {
     levelid: 0,
-    currentGameMode: gamemode["initgame"]
+    currentGameMode: gamemode["initgame"],
+    levelstates: {}
 };
 
 var gameLoad = {
@@ -203,7 +205,10 @@ var level_0_pathedSpecials = {
     5: { code: 'chest_n', id: 1 },
     6: { code: 'enterzone', id: 0 },
     7: { code: 'exitzone', id: 1, dest: 0, transition: 'flow' },
-    8: { code: 'exitzone', id: 1, dest: 1, transition: 'flow'  }
+    8: { code: 'exitzone', id: 1, dest: 1, transition: 'flow' },
+
+    10: { code: 'door_e' },
+    11: { code: 'door_n' },
 
 };
 
@@ -239,6 +244,14 @@ function loadLevel(exitObj) { //levelnum, transitionType) {
     std.printf(" \n level is " + exitObj.levelid);
     std.printf(" \n level is " + exitObj.levelid);
     gamestate.levelid = exitObj.levelid;
+
+    var levelstate = gamestate.levelstates["ls" + gamestate.levelid];
+    if(levelstate == null) {
+        gamestate.levelstates["ls" + gamestate.levelid] = {};
+        levelstate = gamestate.levelstates["ls" + gamestate.levelid];
+        levelstate.mapobjects = {};
+    }
+
     std.printf(" \n level is " + exitObj.levelid);
     SetupLevelFromImage_Static();
     if(exitObj.transition == 'flow') {
@@ -285,7 +298,20 @@ function createMapObject(numcode, level, x, y, i, j) {
     //std.printf("\n" + ref + "\n");
     //std.printf("\n" + ref.code + "\n");
 
+    var newid = (j * 20 + i);
+    var compkey = numcode.toString() + '_' + ref.code + '_' + newid;
+    var levelstate = gamestate.levelstates["ls" + gamestate.levelid];
+    if(levelstate.mapobjects[compkey] != null){
+        var mapobj = levelstate.mapobjects[compkey];
+        if(mapobj && mapobj.isRemoved) {
+            return;
+        }
+    }
+
     var newobj = {};
+    newobj.compkey = compkey;
+    newobj.i = i;
+    newobj.j = j;
     if(ref.code == 'doorkey') {
         newobj.code = ref.code;
         newobj.sprite = mapobjSprites.doorkey
@@ -323,6 +349,17 @@ function createMapObject(numcode, level, x, y, i, j) {
         }
         tryQueueLevel(newobj.levelid);
     }
+    if(ref.code == 'door_e') {
+        newobj.code = ref.code;
+        newobj.sprite = mapobjSprites.eastdoor;
+        newobj.x = x;
+        newobj.y = y;
+        newobj.width = 32;
+        newobj.height = 32;
+        newobj.collisionType = 'block'
+    }
+
+    //newobj.id = newid;
 
     mapobjects.push(newobj);
 }
@@ -486,6 +523,15 @@ function tryMoveChar_CSRR(cpos, vec, level) {
     var i_inc = ovec.x < 0 ? -1 : 1;
     var jstart = ovec.y < 0 ? newboty : newtopy;
     var j_inc = ovec.y < 0 ? -1 : 1;
+
+    var blockingMapObjs = [];
+    for(var m = 0; m < mapobjects.length; m++) {
+        var mo = mapobjects[m];
+        if(mo.collisionType == 'block' && mo.i >= newleftx && mo.i <= newrightx && mo.j >= newtopy && mo.j <= newboty) {
+            blockingMapObjs.push(mo);
+        }
+    }
+
     for(var i = istart; i >= newleftx && i <= newrightx; i += i_inc) { // (var i = newleftx; i <= newrightx; i++)
         //todo george problem with c maybe? very subtle
         for(var j = jstart; j >= newtopy && j <= newboty; j += j_inc) { //(var j = newtopy; j <= newboty; j++)
@@ -497,7 +543,14 @@ function tryMoveChar_CSRR(cpos, vec, level) {
                 continue;
             }
 
-            if(bmap[p + 0] == 0 || i < 0 || j < 0 || i > 19 || j > 13) {
+            var hitblockingObj = false;
+            for(var b = 0; b < blockingMapObjs.length; b++) {
+                if(blockingMapObjs[b].i == i && blockingMapObjs[b].j == j) {
+                    hitblockingObj = true;
+                }
+            }
+
+            if(bmap[p + 0] == 0 || hitblockingObj || i < 0 || j < 0 || i > 19 || j > 13) {
 
                 var otherbox = {};
                 otherbox.right = (i + 1.0) * 32.0;
@@ -835,6 +888,16 @@ function checkObectCollisions() {
         interruptEffect = interruptSideEffectObj.interruptEffect;
     } else {        
         for(let d = 0; d < idsToDelete.length; d++) {
+
+            var dkey = mapobjects[idsToDelete[d]].compkey;
+            var stateobj = gamestate.levelstates["ls" + gamestate.levelid].mapobjects[dkey];
+
+            if(stateobj == null) {
+                gamestate.levelstates["ls" + gamestate.levelid].mapobjects[dkey] = {};
+                stateobj = gamestate.levelstates["ls" + gamestate.levelid].mapobjects[dkey];
+            }
+            stateobj.isRemoved = true;
+
             mapobjects.splice(idsToDelete[d], 1);
         }
     }
@@ -1054,7 +1117,7 @@ function SetupLevelFromImage_Static() {
         }
     }
 
-    freeimage.levelnum = gamestate.levelid
+    freeimage.levelnum = gamestate.levelid;
     freeimage.isLoaded = true;
     gameLoad.useImages.currentBG = freeimage;
     gameLoad.currentLevelbg = freeimage.sprite;
