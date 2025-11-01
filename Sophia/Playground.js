@@ -362,7 +362,8 @@ function createMapObject(numcode, level, x, y, i, j) {
         newobj.y = y;
         newobj.width = 32;
         newobj.height = 32;
-        newobj.collisionType = 'block'
+        newobj.collisionType = 'block';
+        newobj.isInteractable = true;
     }
 
     //newobj.id = newid;
@@ -1191,7 +1192,7 @@ function RunInOverMap() {
             //     charpos.drawoffsetx = 0;
             //     charpos.isFlipped = false; 
             // } 
-            charpos.facing = 'b';
+            charpos.facing = 'u';
             //tryMoveChar_Continuous(charpos, { x: 0.0, y: -5.09 });
             movevec.y = -speed;
         }
@@ -1204,7 +1205,7 @@ function RunInOverMap() {
             //     charpos.drawoffsetx = 0;
             //     charpos.isFlipped = false;
             // } 
-            charpos.facing = 'f';
+            charpos.facing = 'd';
             //tryMoveChar_Continuous(charpos, { x: 0.0, y: 5.09 });
             movevec.y = speed;
         }
@@ -1223,6 +1224,28 @@ function RunInOverMap() {
         }
 
         checkObectCollisions();
+
+        for(var i = 0; i < mapobjects.length; i++) {
+            var mi = mapobjects[i];
+            if(charpos.facing == 'r' && 
+                mi.isInteractable &&
+                mi.x > charpos.x + charpos.width - 0.4 && 
+                mi.x < charpos.x + charpos.width + 4.0 &&
+                mi.y < (charpos.y + (charpos.height / 2.0)) + 1.0 && 
+                mi.y + mi.height + 1.0 > (charpos.y + (charpos.height / 2.0)) ) {
+                gamestate.char.interactableObj = mi;
+                std.printf("\n\n iobj: " + gamestate.char.interactableObj.code);
+            }
+            if(charpos.facing == 'l' && 
+                mi.isInteractable &&
+                mi.x + mi.width - 0.4 < charpos.x && 
+                mi.x + mi.width + 4.0 > charpos.x &&
+                mi.y < (charpos.y + (charpos.height / 2.0)) + 1.0 && 
+                mi.y + mi.height + 1.0 > (charpos.y + (charpos.height / 2.0)) ) {
+                gamestate.char.interactableObj = mi;
+                std.printf("\n\n iobj: " + gamestate.char.interactableObj.code);
+            }
+        }
     }
     
     
