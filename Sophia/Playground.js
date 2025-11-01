@@ -315,11 +315,12 @@ function createMapObject(numcode, level, x, y, i, j) {
     }
 
     var newobj = {};
+    newobj.code = ref.code;
     newobj.compkey = compkey;
     newobj.i = i;
     newobj.j = j;
     if(ref.code == 'doorkey') {
-        newobj.code = ref.code;
+        //newobj.code = ref.code;
         newobj.sprite = mapobjSprites.doorkey
         newobj.x = x;
         newobj.y = y;
@@ -328,7 +329,7 @@ function createMapObject(numcode, level, x, y, i, j) {
         newobj.collisionType = 'touch'
     }
     if(ref.code == 'exitzone') {
-        newobj.code = ref.code;
+        //newobj.code = ref.code;
         newobj.levelid = ref.dest;
         newobj.sprite = null;
         newobj.x = x;
@@ -356,7 +357,7 @@ function createMapObject(numcode, level, x, y, i, j) {
         tryQueueLevel(newobj.levelid);
     }
     if(ref.code == 'door_e') {
-        newobj.code = ref.code;
+        //newobj.code = ref.code;
         newobj.sprite = mapobjSprites.eastdoor;
         newobj.x = x;
         newobj.y = y;
@@ -1225,27 +1226,71 @@ function RunInOverMap() {
 
         checkObectCollisions();
 
+        const irange = 4.0;
+
+        var ipoint = { x: charpos.x + (charpos.width / 2.0), y: charpos.y + (charpos.height / 2.0) };
+        if(charpos.facing == 'r') {
+            ipoint.x += (charpos.width / 2.0) + irange;
+        }
+        if(charpos.facing == 'l') {
+            ipoint.x -= ((charpos.width / 2.0) + irange);
+        }
+        if(charpos.facing == 'd') {
+            ipoint.y += (charpos.height / 2.0) + irange;
+        }
+        if(charpos.facing == 'u') {
+            ipoint.y -= ((charpos.height / 2.0) + irange);
+        }
+
+        var tempi = null;
+        var tempindex = -1;
+
         for(var i = 0; i < mapobjects.length; i++) {
             var mi = mapobjects[i];
-            if(charpos.facing == 'r' && 
-                mi.isInteractable &&
-                mi.x > charpos.x + charpos.width - 0.4 && 
-                mi.x < charpos.x + charpos.width + 4.0 &&
-                mi.y < (charpos.y + (charpos.height / 2.0)) + 1.0 && 
-                mi.y + mi.height + 1.0 > (charpos.y + (charpos.height / 2.0)) ) {
-                gamestate.char.interactableObj = mi;
-                std.printf("\n\n iobj: " + gamestate.char.interactableObj.code);
+            if(mi.isInteractable && ipoint.x > mi.x && ipoint.x < mi.x + mi.width &&
+                    ipoint.y > mi.y && ipoint.y < mi.y + mi.height ) {
+                tempi = mi;
+                tempindex = i;
+                std.printf("\n\n iobj: " + tempi.code);   
             }
-            if(charpos.facing == 'l' && 
-                mi.isInteractable &&
-                mi.x + mi.width - 0.4 < charpos.x && 
-                mi.x + mi.width + 4.0 > charpos.x &&
-                mi.y < (charpos.y + (charpos.height / 2.0)) + 1.0 && 
-                mi.y + mi.height + 1.0 > (charpos.y + (charpos.height / 2.0)) ) {
-                gamestate.char.interactableObj = mi;
-                std.printf("\n\n iobj: " + gamestate.char.interactableObj.code);
+
+            // if(charpos.facing == 'r' && 
+            //     mi.isInteractable &&
+            //     mi.x > charpos.x + charpos.width - 0.4 && 
+            //     mi.x < charpos.x + charpos.width + 4.0 &&
+            //     mi.y < (charpos.y + (charpos.height / 2.0)) + 1.0 && 
+            //     mi.y + mi.height + 1.0 > (charpos.y + (charpos.height / 2.0)) ) {
+            //     gamestate.char.interactableObj = mi;
+            //     std.printf("\n\n iobj: " + gamestate.char.interactableObj.code);
+            // }
+            // if(charpos.facing == 'l' && 
+            //     mi.isInteractable &&
+            //     mi.x + mi.width - 0.4 < charpos.x && 
+            //     mi.x + mi.width + 4.0 > charpos.x &&
+            //     mi.y < (charpos.y + (charpos.height / 2.0)) + 1.0 && 
+            //     mi.y + mi.height + 1.0 > (charpos.y + (charpos.height / 2.0)) ) {
+            //     gamestate.char.interactableObj = mi;
+            //     std.printf("\n\n iobj: " + gamestate.char.interactableObj.code);
+            // }
+        }
+        gamestate.char.interactableObj = tempi;
+
+        if (gamestate.char.interactableObj && p1Pad.pressed(Pads.CROSS)) {
+            var gobj = gamestate.char.interactableObj;
+            if(gobj.code == 'door_e') {
+                var dkey = gobj.compkey;
+                var stateobj = gamestate.levelstates["ls" + gamestate.levelid].mapobjects[dkey];
+
+                if(stateobj == null) {
+                    gamestate.levelstates["ls" + gamestate.levelid].mapobjects[dkey] = {};
+                    stateobj = gamestate.levelstates["ls" + gamestate.levelid].mapobjects[dkey];
+                }
+                stateobj.isRemoved = true;
+
+                mapobjects.splice(tempindex, 1);
             }
         }
+
     }
     
     
