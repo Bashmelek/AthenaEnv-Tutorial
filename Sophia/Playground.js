@@ -113,6 +113,7 @@ var gamestate = {
     currentGameMode: gamemode["initgame"],
     levelstates: {},
     char: {
+        kesef: 0,
         numkeys: 0,
         interactableObj: null
     }
@@ -213,6 +214,18 @@ var level_0_pathedSpecials = {
 
     10: { code: 'door_e' },
     11: { code: 'door_n' },
+    
+    16: { code: 'exitzone', id: 1, dest: 2, transition: 'flow' },
+    17: { code: 'exitzone', id: 1, dest: 0, transition: 'flow' },
+
+    18: { code: 'exitzone', id: 1, dest: 0, transition: 'flow' },
+    19: { code: 'exitzone', id: 1, dest: 1, transition: 'flow' },
+    20: { code: 'exitzone', id: 1, dest: 1, transition: 'flow' },
+    21: { code: 'exitzone', id: 1, dest: 1, transition: 'flow' },
+    22: { code: 'exitzone', id: 1, dest: 1, transition: 'flow' },
+    23: { code: 'exitzone', id: 1, dest: 1, transition: 'flow' },
+    24: { code: 'exitzone', id: 1, dest: 1, transition: 'flow' },
+    25: { code: 'exitzone', id: 1, dest: 1, transition: 'flow' },
 
 };
 
@@ -233,6 +246,13 @@ function loadLevel(exitObj) { //levelnum, transitionType) {
         case 1:
         std.printf(" \n i say 11");
             areamap = std.open(resfolder + "/maparea_advdemo1.bmp", "r");// new Image("maparea_demo0.bmp");
+            var tempmap = new ArrayBuffer(14 * 20 * 3 + START_BMP24);
+            areamap.read(tempmap, 0, 14 * 20 * 3 - 0 + START_BMP24)
+            gameLoad.mapbits = new Uint8Array(tempmap);
+        break;
+        case 2:
+        std.printf(" \n i say 22");
+            areamap = std.open(resfolder + "/maparea_advdemo2.bmp", "r");// new Image("maparea_demo0.bmp");
             var tempmap = new ArrayBuffer(14 * 20 * 3 + START_BMP24);
             areamap.read(tempmap, 0, 14 * 20 * 3 - 0 + START_BMP24)
             gameLoad.mapbits = new Uint8Array(tempmap);
@@ -266,7 +286,12 @@ function loadLevel(exitObj) { //levelnum, transitionType) {
         }
         if(exitObj.collisionType == 'exitright'){
             charpos.x = 0.2;
-
+        }
+        if(exitObj.collisionType == 'exitup'){
+            charpos.y = 14.0 * 32.0 - charpos.height - 0.2;
+        }
+        if(exitObj.collisionType == 'exitdown'){
+            charpos.y = 0.2;
         }
     } else {
         charpos.x = 50.0;
@@ -343,6 +368,12 @@ function createMapObject(numcode, level, x, y, i, j) {
         }
         if(i == 19) {
             newobj.collisionType = 'exitright';
+        }
+        if(j == 0) {
+            newobj.collisionType = 'exitup';
+        }
+        if(j == 13) {
+            newobj.collisionType = 'exitdown';
         }
         var refid = newobj.levelid;
         var transitionType = newobj.transition;
@@ -867,27 +898,44 @@ function checkObectCollisions() {
             if( charpos.y + 0.01 < mo.y + mo.height && charpos.y + charpos.height > mo.y + 0.01) {
                 idsToDelete.push(c);    
                 std.printf(" \n picked up " + c);
+                if(mapobjects[c].code == 'doorkey') {
+                    gamestate.char.numkeys++;
+                }
             }
         }
         if(mapobjects[c].collisionType == 'mycenter' && charpos.x < mo.x + mo.width / 2.0 && charpos.x + charpos.width > mo.x + mo.width / 2.0) {
-            if( charpos.y + 0.01 < mo.y + mo.height + mo.height / 2.0 && charpos.y + charpos.height > mo.y + mo.height / 2.0) {
+            if( charpos.y + 0.01 < mo.y + mo.height / 2.0 && charpos.y + charpos.height > mo.y + mo.height / 2.0) {
                 //idsToDelete.push(c); 
                 //interruptSideEffectObj = mo;   
                 std.printf(" \n\n contains cneter " + c);
             }
         }
         if(mapobjects[c].collisionType == 'exitright' && charpos.x < mo.x + mo.width && charpos.x + charpos.width > mo.x + mo.width + 0.01) {
-            if( charpos.y + 0.01 < mo.y + mo.height + mo.height / 2.0 && charpos.y + charpos.height > mo.y + mo.height / 2.0) {
+            if( charpos.y + 0.01 < mo.y + mo.height / 2.0 && charpos.y + charpos.height > mo.y + mo.height / 2.0) {
                 //idsToDelete.push(c); 
                 interruptSideEffectObj = mo;   
                 std.printf(" \n\n exitright " + c);
             }
         }
         if(mapobjects[c].collisionType == 'exitleft' && charpos.x < mo.x - 0.01 && charpos.x + charpos.width > mo.x) {
-            if( charpos.y + 0.01 < mo.y + mo.height + mo.height / 2.0 && charpos.y + charpos.height > mo.y + mo.height / 2.0) {
+            if( charpos.y + 0.01 < mo.y + mo.height / 2.0 && charpos.y + charpos.height > mo.y + mo.height / 2.0) {
                 //idsToDelete.push(c); 
                 interruptSideEffectObj = mo;   
                 std.printf(" \n\n exitleft " + c);
+            }
+        }
+        if(mapobjects[c].collisionType == 'exitup' && charpos.y < mo.y - 0.01 && charpos.y + charpos.height > mo.y) {
+            if( charpos.x + 0.01 < mo.x + mo.width / 2.0 && charpos.x + charpos.width > mo.x + mo.width / 2.0) {
+                //idsToDelete.push(c); 
+                interruptSideEffectObj = mo;   
+                std.printf(" \n\n exitup " + c);
+            }
+        }
+        if(mapobjects[c].collisionType == 'exitdown' && charpos.y < mo.y + mo.height && charpos.y + charpos.height > mo.y + mo.height + 0.01) {
+            if( charpos.x + 0.01 < mo.x + mo.width / 2.0 && charpos.x + charpos.width > mo.x + mo.width / 2.0) {
+                //idsToDelete.push(c); 
+                interruptSideEffectObj = mo;   
+                std.printf(" \n\n exitdown " + c);
             }
         }
     }
@@ -1277,7 +1325,7 @@ function RunInOverMap() {
 
         if (gamestate.char.interactableObj && p1Pad.pressed(Pads.CROSS)) {
             var gobj = gamestate.char.interactableObj;
-            if(gobj.code == 'door_e') {
+            if(gobj.code == 'door_e' && gamestate.char.numkeys > 0) {
                 var dkey = gobj.compkey;
                 var stateobj = gamestate.levelstates["ls" + gamestate.levelid].mapobjects[dkey];
 
@@ -1285,6 +1333,7 @@ function RunInOverMap() {
                     gamestate.levelstates["ls" + gamestate.levelid].mapobjects[dkey] = {};
                     stateobj = gamestate.levelstates["ls" + gamestate.levelid].mapobjects[dkey];
                 }
+                gamestate.char.numkeys--;
                 stateobj.isRemoved = true;
 
                 mapobjects.splice(tempindex, 1);
