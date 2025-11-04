@@ -30,6 +30,7 @@ const tile_dblue = new Image(resfolder + "/tiles_64darkerblue.png");
 const mapobjSprites = {
     doorkey: new Image(resfolder + "/doorkey32.png"),
     eastdoor: new Image(resfolder + "/eastdoor_32.png"),
+    charcat: new Image(resfolder + "/charchar_64.png"),
 };
 
 //const tile_32 = new Image(resfolder + "/tiles_64not.png");
@@ -227,6 +228,20 @@ var level_0_pathedSpecials = {
     24: { code: 'exitzone', id: 1, dest: 1, transition: 'flow' },
     25: { code: 'exitzone', id: 1, dest: 1, transition: 'flow' },
 
+    
+    32: { code: 'character', id: 0, action: 'talk' },
+    33: { code: 'character', id: 1, action: 'talk' },
+
+};
+
+function getCharObjInfo(charid) {
+    var cb = {};
+
+    if(charid == 0) {
+        cb.sprite = mapobjSprites.charcat;
+    }
+
+    return cb;
 };
 
 function loadLevel(exitObj) { //levelnum, transitionType) {
@@ -396,6 +411,18 @@ function createMapObject(numcode, level, x, y, i, j) {
         newobj.height = 32;
         newobj.collisionType = 'block';
         newobj.isInteractable = true;
+    }
+    if(ref.code == 'character') {
+        var cb = getCharObjInfo(ref.id);
+        newobj.sprite = cb.sprite;
+        newobj.x = x;
+        newobj.y = y;
+        newobj.width = 32;
+        newobj.height = 32;
+        newobj.collisionType = 'block'
+        newobj.isInteractable = true;
+        newobj.drawoffsetx = -0.0;
+        newobj.drawoffsety = -32.0;
     }
 
     //newobj.id = newid;
@@ -1348,7 +1375,7 @@ function RunInOverMap() {
     for(let c = 0; c < mapobjects.length; c++) {
         var mo = mapobjects[c];
         if(mo.sprite) {
-            mapobjects[c].sprite.draw(mo.x, mo.y);
+            mo.sprite.draw(mo.x + (mo.drawoffsetx || 0.0), mo.y + (mo.drawoffsety || 0.0));
         }
     }
 
