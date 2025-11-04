@@ -337,6 +337,17 @@ var tryQueueLevel = function(levelnum) {
     }
 };
 
+function insertMapObjectInDrawOrder(newobj){
+
+    for(var i = 0; i < mapobjects.length; i++){
+        if(mapobjects.y < newobj.y) {
+            mapobjects.splice(i, 0, newobj);
+            return;
+        }
+    }
+    mapobjects.push(newobj);
+}
+
 function createMapObject(numcode, level, x, y, i, j) {
 
     var ref = level_0_pathedSpecials[numcode];
@@ -427,7 +438,7 @@ function createMapObject(numcode, level, x, y, i, j) {
 
     //newobj.id = newid;
 
-    mapobjects.push(newobj);
+    insertMapObjectInDrawOrder(newobj);
 }
 
 
@@ -1372,14 +1383,21 @@ function RunInOverMap() {
     
     gameLoad.currentLevelbg.draw(0.0, 0.0);//tile_dblue   screen_640x448
 
+    var renderedChar = false;
+
     for(let c = 0; c < mapobjects.length; c++) {
         var mo = mapobjects[c];
+        if(!renderedChar && mo.y < charpos.y) {
+            sprite.draw(charpos.x + (sprite.drawoffsetx || 0.0), charpos.y + (sprite.drawoffsety || charpos.drawoffsety));
+            renderedChar = true;
+        }
         if(mo.sprite) {
             mo.sprite.draw(mo.x + (mo.drawoffsetx || 0.0), mo.y + (mo.drawoffsety || 0.0));
         }
     }
-
-    sprite.draw(charpos.x + (sprite.drawoffsetx || 0.0), charpos.y + (sprite.drawoffsety || charpos.drawoffsety));
+    if(!renderedChar) {
+        sprite.draw(charpos.x + (sprite.drawoffsetx || 0.0), charpos.y + (sprite.drawoffsety || charpos.drawoffsety));
+    }
     font.print(10, 10, "Why dost thou continue?");    
 
     charpos.charsprite = sprite;
