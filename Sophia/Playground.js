@@ -239,6 +239,7 @@ function getCharObjInfo(charid) {
 
     if(charid == 0) {
         cb.sprite = mapobjSprites.charcat;
+        cb.charname = 'Mitsi';
     }
 
     return cb;
@@ -425,7 +426,9 @@ function createMapObject(numcode, level, x, y, i, j) {
     }
     if(ref.code == 'character') {
         var cb = getCharObjInfo(ref.id);
+        newobj.charid = ref.id;
         newobj.sprite = cb.sprite;
+        newobj.charname = cb.charname;
         newobj.x = x;
         newobj.y = y;
         newobj.width = 32;
@@ -434,11 +437,54 @@ function createMapObject(numcode, level, x, y, i, j) {
         newobj.isInteractable = true;
         newobj.drawoffsetx = -0.0;
         newobj.drawoffsety = -32.0;
+        newobj.action = cb.action || ref.action;
     }
 
     //newobj.id = newid;
 
     insertMapObjectInDrawOrder(newobj);
+}
+
+
+function getConvoByID(convoid) {
+    var convoObj = {};
+
+    switch(convoid)
+    {
+        case convoid:
+
+        convoObj[0] = { text: "hello" };
+
+        default:
+            break;
+    }
+
+
+    return convoObj;
+}
+
+
+function getConvoIdForChar(otherchar){
+    var convoid = -1;
+
+    if(otherchar.charname == 'Mitsi' && !gamestate.gotCat) {
+        convoid = 1;
+    }
+
+    return convoid;
+}
+
+function beginConvo(otherchar, convoid) {
+
+    var convoObj = null;
+    std.printf("\n\n begin convo: ");
+    if(!convoid){
+        convoid = getConvoIdForChar(otherchar);
+    }
+
+    convoObj = getConvoByID(convoid);
+
+    allowMoveChar = false;
 }
 
 
@@ -1337,7 +1383,7 @@ function RunInOverMap() {
                     ipoint.y > mi.y && ipoint.y < mi.y + mi.height ) {
                 tempi = mi;
                 tempindex = i;
-                std.printf("\n\n iobj: " + tempi.code);   
+                //std.printf("\n\n iobj: " + tempi.code);   
             }
 
             // if(charpos.facing == 'r' && 
@@ -1375,6 +1421,11 @@ function RunInOverMap() {
                 stateobj.isRemoved = true;
 
                 mapobjects.splice(tempindex, 1);
+            }
+            if(gobj.code == 'character') {
+                if(gobj.action == 'talk') {
+                    beginConvo(gobj, null);
+                }
             }
         }
 
