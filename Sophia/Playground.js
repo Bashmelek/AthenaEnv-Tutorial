@@ -26,6 +26,7 @@ const sprite_lr = new Image(resfolder + "/dogchar64clear_r.png");
 const sprite_f = new Image(resfolder + "/dogchar64clear_f.png");
 const sprite_b = new Image(resfolder + "/dogchar64clear_b.png");
 const tile_dblue = new Image(resfolder + "/tiles_64darkerblue.png");
+const uibg_sprite = new Image(resfolder + "/tiles_32slate.png");
 
 const mapobjSprites = {
     doorkey: new Image(resfolder + "/doorkey32.png"),
@@ -102,6 +103,7 @@ tile_dblue.height = 32;
 
 var interruptEffect = null;
 var allowMoveChar = true;
+var inConvo = false;
 
 var gamemode = {
     "loadingmap": 0,
@@ -117,7 +119,8 @@ var gamestate = {
         kesef: 0,
         numkeys: 0,
         interactableObj: null
-    }
+    },
+    currentConvo: null
 };
 
 var gameLoad = {
@@ -453,7 +456,8 @@ function getConvoByID(convoid) {
     {
         case convoid:
 
-        convoObj[0] = { text: "hello" };
+        convoObj[0] = { text: "hello", nextid: 1 };
+        convoObj[1] = { text: "let's team up!" };
 
         default:
             break;
@@ -483,8 +487,12 @@ function beginConvo(otherchar, convoid) {
     }
 
     convoObj = getConvoByID(convoid);
+    convoObj.currentNode = convoObj.startnode || 0;
 
     allowMoveChar = false;
+
+    gamestate.currentConvo = convoObj;
+    inConvo = true;
 }
 
 
@@ -1268,6 +1276,17 @@ function SetupLevelFromImage_Static() {
 let timer = Timer.new()
 Timer.getTime(timer)
 
+function DrawConvo() {
+    //uibg_sprite
+    
+    uibg_sprite.width = 600;
+    uibg_sprite.height = 64;
+    uibg_sprite.draw(10, 400);
+    
+    //std.printf('\ntextis: ' + gamestate.currentConvo[gamestate.currentConvo.currentNode].text);
+    font.print(14, 404, gamestate.currentConvo[gamestate.currentConvo.currentNode].text);    //564
+}
+
 
 function RunInOverMap() {
     var sprite = charpos.charsprite;
@@ -1452,6 +1471,10 @@ function RunInOverMap() {
     font.print(10, 10, "Why dost thou continue?");    
 
     charpos.charsprite = sprite;
+
+    if(inConvo) {
+        DrawConvo();
+    }
 
     
     if(interruptEffect) {
