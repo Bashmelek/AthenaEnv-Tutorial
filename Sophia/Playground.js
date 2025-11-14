@@ -105,6 +105,8 @@ var interruptEffect = null;
 var allowMoveChar = true;
 var inConvo = false;
 
+var convoClickCooldown = 10;
+
 var gamemode = {
     "loadingmap": 0,
     "inovermap": 1,
@@ -432,6 +434,11 @@ function createMapObject(numcode, level, x, y, i, j) {
         newobj.charid = ref.id;
         newobj.sprite = cb.sprite;
         newobj.charname = cb.charname;
+
+        if(newobj.charname == 'Mitis' && gamestate.gotCat){
+            return;
+        }
+
         newobj.x = x;
         newobj.y = y;
         newobj.width = 32;
@@ -457,7 +464,7 @@ function getConvoByID(convoid) {
         case convoid:
 
         convoObj[0] = { text: "hello", nextid: 1 };
-        convoObj[1] = { text: "let's team up!" };
+        convoObj[1] = { text: "let's team up!", endsideEffect: 'catjoin' };
 
         default:
             break;
@@ -493,6 +500,7 @@ function beginConvo(otherchar, convoid) {
 
     gamestate.currentConvo = convoObj;
     inConvo = true;
+    convoClickCooldown = 4;
 }
 
 
@@ -1276,6 +1284,25 @@ function SetupLevelFromImage_Static() {
 let timer = Timer.new()
 Timer.getTime(timer)
 
+function RunConvoSideEffect(effectname) {
+    switch(effectname) {
+        case 'catjoin':
+
+            for(var i = 0; i < mapobjects.length; i++) {
+                var mi = mapobjects[i];
+                if(mi.code == 'character' && mi.charname && mi.charname == 'Mitsi') {
+                    gamestate.gotCat = true;
+                    mapobjects.splice(i, 1);
+                    i = mapobjects.length + 1;
+                }
+            }
+
+            break;
+        default:
+            break;
+    }
+}
+
 function DrawConvo() {
     //uibg_sprite
     
@@ -1285,6 +1312,23 @@ function DrawConvo() {
     
     //std.printf('\ntextis: ' + gamestate.currentConvo[gamestate.currentConvo.currentNode].text);
     font.print(14, 404, gamestate.currentConvo[gamestate.currentConvo.currentNode].text);    //564
+
+    if (p1Pad.justPressed(Pads.CROSS) && convoClickCooldown <= 0) { 
+
+        var endsideEffect = gamestate.currentConvo[gamestate.currentConvo.currentNode].endsideEffect;
+        if(endsideEffect && endsideEffect.length > 0) {
+            RunConvoSideEffect(endsideEffect);
+        }
+
+        gamestate.currentConvo.currentNode = gamestate.currentConvo[gamestate.currentConvo.currentNode].nextid || -1;
+
+        if(gamestate.currentConvo.currentNode < 0){
+            allowMoveChar = true;
+
+            gamestate.currentConvo = null;
+            inConvo = false;
+        }
+    }
 }
 
 
@@ -1474,6 +1518,9 @@ function RunInOverMap() {
 
     if(inConvo) {
         DrawConvo();
+        if(convoClickCooldown >= 0) {
+            convoClickCooldown--;
+        }
     }
 
     
