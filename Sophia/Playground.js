@@ -435,7 +435,7 @@ function createMapObject(numcode, level, x, y, i, j) {
         newobj.sprite = cb.sprite;
         newobj.charname = cb.charname;
 
-        if(newobj.charname == 'Mitis' && gamestate.gotCat){
+        if(newobj.charname == 'Mitsi' && gamestate.gotCat){
             return;
         }
 
