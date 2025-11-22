@@ -32,6 +32,8 @@ const mapobjSprites = {
     doorkey: new Image(resfolder + "/doorkey32.png"),
     eastdoor: new Image(resfolder + "/eastdoor_32.png"),
     charcat: new Image(resfolder + "/charchar_64.png"),
+    chest_r: new Image(resfolder + "/trchest_33.png"),
+    chestopen_r: new Image(resfolder + "/trchestop_33.png"),
 };
 
 //const tile_32 = new Image(resfolder + "/tiles_64not.png");
@@ -236,6 +238,9 @@ var level_0_pathedSpecials = {
     
     32: { code: 'character', id: 0, action: 'talk' },
     33: { code: 'character', id: 1, action: 'talk' },
+    
+    42: { code: 'chest_r', id: 0 },
+    43: { code: 'chest_r', id: 1 },
 
 };
 
@@ -364,8 +369,9 @@ function createMapObject(numcode, level, x, y, i, j) {
     var newid = (j * 20 + i);
     var compkey = numcode.toString() + '_' + ref.code + '_' + newid;
     var levelstate = gamestate.levelstates["ls" + gamestate.levelid];
+    var mapobj = null;
     if(levelstate.mapobjects[compkey] != null){
-        var mapobj = levelstate.mapobjects[compkey];
+        mapobj = levelstate.mapobjects[compkey];
         if(mapobj && mapobj.isRemoved) {
             return;
         }
@@ -429,6 +435,28 @@ function createMapObject(numcode, level, x, y, i, j) {
         newobj.collisionType = 'block';
         newobj.isInteractable = true;
     }
+    if(ref.code == 'chest_r') {
+        //newobj.code = ref.code;
+
+        if(mapobj && mapobj.chestOpened) {
+            newobj.chestOpened = true;
+            newobj.sprite = mapobjSprites.chestopen_r;
+            newobj.drawoffsetx = -10.0;
+            newobj.drawoffsety = -39.0;
+
+        } else {
+            newobj.chestOpened = false;
+            newobj.sprite = mapobjSprites.chest_r;
+            newobj.drawoffsetx = 0.0;
+            newobj.drawoffsety = -19.0;
+        } 
+        newobj.x = x;
+        newobj.y = y;
+        newobj.width = 32;
+        newobj.height = 32;
+        newobj.collisionType = 'block';
+        newobj.isInteractable = true;
+    }
     if(ref.code == 'character') {
         var cb = getCharObjInfo(ref.id);
         newobj.charid = ref.id;
@@ -446,7 +474,7 @@ function createMapObject(numcode, level, x, y, i, j) {
         newobj.collisionType = 'block'
         newobj.isInteractable = true;
         newobj.drawoffsetx = -0.0;
-        newobj.drawoffsety = -32.0;
+        newobj.drawoffsety = -19.0;
         newobj.action = cb.action || ref.action;
     }
 
@@ -1485,6 +1513,21 @@ function RunInOverMap() {
 
                 mapobjects.splice(tempindex, 1);
             }
+            if(gobj.code == 'chest_r' && !gobj.chestOpened) {
+                var dkey = gobj.compkey;
+                var stateobj = gamestate.levelstates["ls" + gamestate.levelid].mapobjects[dkey];
+
+                if(stateobj == null) {
+                    gamestate.levelstates["ls" + gamestate.levelid].mapobjects[dkey] = {};
+                    stateobj = gamestate.levelstates["ls" + gamestate.levelid].mapobjects[dkey];
+                }
+                stateobj.chestOpened = true;
+                
+                gobj.sprite = mapobjSprites.chestopen_r;
+                gobj.chestOpened = true;
+                gobj.drawoffsetx = -10.0;
+                gobj.drawoffsety = -39.0;
+            }
             if(gobj.code == 'character') {
                 if(gobj.action == 'talk') {
                     beginConvo(gobj, null);
@@ -1501,7 +1544,7 @@ function RunInOverMap() {
 
     for(let c = 0; c < mapobjects.length; c++) {
         var mo = mapobjects[c];
-        if(!renderedChar && mo.y < charpos.y) {
+        if(!renderedChar && mo.y > charpos.y) {
             sprite.draw(charpos.x + (sprite.drawoffsetx || 0.0), charpos.y + (sprite.drawoffsety || charpos.drawoffsety));
             renderedChar = true;
         }
