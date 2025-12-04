@@ -1,28 +1,73 @@
 
+import { resfolder,
+    mylogo,
+    tile_lightstone,
+    sprite_lr,
+    sprite_f,
+    sprite_b,
+    tile_dblue,
+    uibg_sprite,
+    mapobjSprites,
+    screen_640x448,
+    START_BMP24, } from "./GameData.js";
 
-function setupProgram() {
+
+var charpos = { x: 50.0, y: 50.0, width: 32, height: 32, drawoffsetx: 0.0, drawoffsety: -32.0, isFlipped: false, 
+    charsprite: sprite_lr,
+    facing: 'r',
+    timemove: 0.0,
+    lastmovevec: { x: 0.0, y: 0.0 } };
+
+var mapobjects = new Array();
 
 
 
+var interruptEffect = null;
+var allowMoveChar = true;
+var inConvo = false;
 
+var convoClickCooldown = 10;
+
+var gamemode = {
+    "loadingmap": 0,
+    "inovermap": 1,
+    "initgame": 2
+}
+
+var gamestate = {
+    levelid: 0,
+    currentGameMode: gamemode["initgame"],
+    levelstates: {},
+    char: {
+        kesef: 0,
+        numkeys: 0,
+        interactableObj: null
+    },
+    currentConvo: null
 };
 
+var gameLoad = {
 
+    areamap: null,
+    mapbits: null,
+    currentLevelbg: null,
 
-const mylogo = new Image(resfolder + "/makarioslogo2.png");// Loulou_UomoScreen   makarioslogo1
-
-const tile_lightstone = new Image(resfolder + "/tiles_64lightstone.png");//tiles_64not   tiles_32lightstone
-//const sprite = new Image(resfolder + "/tiles_64not.png");
-const sprite_lr = new Image(resfolder + "/dogchar64clear_r.png");
-const sprite_f = new Image(resfolder + "/dogchar64clear_f.png");
-const sprite_b = new Image(resfolder + "/dogchar64clear_b.png");
-const tile_dblue = new Image(resfolder + "/tiles_64darkerblue.png");
-const uibg_sprite = new Image(resfolder + "/tiles_32slate.png");
-
-const mapobjSprites = {
-    doorkey: new Image(resfolder + "/doorkey32.png"),
-    eastdoor: new Image(resfolder + "/eastdoor_32.png"),
-    charcat: new Image(resfolder + "/charchar_64.png"),
-    chest_r: new Image(resfolder + "/trchest_33.png"),
-    chestopen_r: new Image(resfolder + "/trchestop_33.png"),
+    useImages: {},
+    queuedLevels: []
 };
+
+const NUM_CACHED_LEVELS = 10;
+
+
+
+export { charpos,  mapobjects,
+interruptEffect,
+allowMoveChar,
+inConvo,
+convoClickCooldown,
+gamemode,
+gamestate,
+gameLoad,
+NUM_CACHED_LEVELS
+
+ };
