@@ -9,18 +9,20 @@ import { resfolder,
     tile_dblue,
     uibg_sprite,
     mapobjSprites,
-    screen_640x448,
-    START_BMP24, } from "./GameData.js";
-import { functionDemo } from "./ExporteeA.js";
+    //screen_640x448,
+    START_BMP24,
+    level_0_pathedSpecials, } from "./GameData.js";
+import { functionDemo, readonlyer } from "./ExporteeA.js";
 import { charpos,  mapobjects,
-interruptEffect,
-allowMoveChar,
-inConvo,
-convoClickCooldown,
+//interruptEffect,
+//allowMoveChar,
+//inConvo,
+//convoClickCooldown,
 gamemode,
 gamestate,
 gameLoad,
-NUM_CACHED_LEVELS } from "./Gamestate.js";
+NUM_CACHED_LEVELS,
+ClearMapObjects } from "./Gamestate.js";
 
 import {  
     abmap,
@@ -109,42 +111,7 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Screen.getMode();
 
     gameLoad.useImages.currentBG = null;
     gameLoad.useImages.nextFreeID = 0;
- }; 
-
-var level_0_pathedSpecials = {
-
-    1: { code: 'doorkey' },
-    2: { code: 'eedoor_e' },
-    3: { code: 'eedoor_n' },
-    4: { code: 'chest_w', id: 0 },
-    5: { code: 'chest_n', id: 1 },
-    6: { code: 'enterzone', id: 0 },
-    7: { code: 'exitzone', id: 1, dest: 0, transition: 'flow' },
-    8: { code: 'exitzone', id: 1, dest: 1, transition: 'flow' },
-
-    10: { code: 'door_e' },
-    11: { code: 'door_n' },
-    
-    16: { code: 'exitzone', id: 1, dest: 2, transition: 'flow' },
-    17: { code: 'exitzone', id: 1, dest: 0, transition: 'flow' },
-
-    18: { code: 'exitzone', id: 1, dest: 0, transition: 'flow' },
-    19: { code: 'exitzone', id: 1, dest: 1, transition: 'flow' },
-    20: { code: 'exitzone', id: 1, dest: 1, transition: 'flow' },
-    21: { code: 'exitzone', id: 1, dest: 1, transition: 'flow' },
-    22: { code: 'exitzone', id: 1, dest: 1, transition: 'flow' },
-    23: { code: 'exitzone', id: 1, dest: 1, transition: 'flow' },
-    24: { code: 'exitzone', id: 1, dest: 1, transition: 'flow' },
-    25: { code: 'exitzone', id: 1, dest: 1, transition: 'flow' },
-
-    
-    32: { code: 'character', id: 0, action: 'talk' },
-    33: { code: 'character', id: 1, action: 'talk' },
-    
-    42: { code: 'chest_r', id: 0 },
-    43: { code: 'chest_r', id: 1 },
-
-}; 
+ };  
 
 
 function getConvoByID(convoid) {
@@ -187,11 +154,11 @@ function beginConvo(otherchar, convoid) {
     convoObj = getConvoByID(convoid);
     convoObj.currentNode = convoObj.startnode || 0;
 
-    allowMoveChar = false;
+    gamestate.allowMoveChar = false;
 
     gamestate.currentConvo = convoObj;
-    inConvo = true;
-    convoClickCooldown = 4;
+    gamestate.inConvo = true;
+    gamestate.convoClickCooldown = 4;
 }
  
  
@@ -231,7 +198,7 @@ function DrawConvo() {
     //std.printf('\ntextis: ' + gamestate.currentConvo[gamestate.currentConvo.currentNode].text);
     font.print(14, 404, gamestate.currentConvo[gamestate.currentConvo.currentNode].text);    //564
 
-    if (p1Pad.justPressed(Pads.CROSS) && convoClickCooldown <= 0) { 
+    if (p1Pad.justPressed(Pads.CROSS) && gamestate.convoClickCooldown <= 0) { 
 
         var endsideEffect = gamestate.currentConvo[gamestate.currentConvo.currentNode].endsideEffect;
         if(endsideEffect && endsideEffect.length > 0) {
@@ -241,10 +208,10 @@ function DrawConvo() {
         gamestate.currentConvo.currentNode = gamestate.currentConvo[gamestate.currentConvo.currentNode].nextid || -1;
 
         if(gamestate.currentConvo.currentNode < 0){
-            allowMoveChar = true;
+            gamestate.allowMoveChar = true;
 
             gamestate.currentConvo = null;
-            inConvo = false;
+            gamestate.inConvo = false;
         }
     }
 }
@@ -265,7 +232,7 @@ function RunInOverMap() {
         //SetupLevelFromImage_Lazy(gameLoad.queuedLevels[q]);
     }
 
-    if(allowMoveChar) {
+    if(gamestate.allowMoveChar) {
 
         var movevec = { x: 0.0, y: 0.0 };
         var speed = Math.min(Math.max(1.00, charpos.timemove / 1.2) * 0.79, 5.09);
@@ -449,16 +416,16 @@ function RunInOverMap() {
 
     charpos.charsprite = sprite;
 
-    if(inConvo) {
+    if(gamestate.inConvo) {
         DrawConvo();
-        if(convoClickCooldown >= 0) {
-            convoClickCooldown--;
+        if(gamestate.convoClickCooldown >= 0) {
+            gamestate.convoClickCooldown--;
         }
     }
 
     
-    if(interruptEffect) {
-        interruptEffect();
+    if(gamestate.interruptEffect) {
+        gamestate.interruptEffect();
     }
 }
 
@@ -514,6 +481,7 @@ Screen.display(() => {
     switch(gamestate.currentGameMode) {
         case "zztest":
             functionDemo();
+            readonlyer.val += 1;
             break;
         case gamemode["loadingmap"]:
             gamestate.currentGameMode = gamemode["inovermap"];

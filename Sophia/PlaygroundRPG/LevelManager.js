@@ -9,17 +9,19 @@ import { resfolder,
     tile_dblue,
     uibg_sprite,
     mapobjSprites,
-    screen_640x448,
-    START_BMP24, } from "./GameData.js"; 
+    //screen_640x448,
+    START_BMP24,
+    level_0_pathedSpecials, } from "./GameData.js"; 
 import { charpos,  mapobjects,
-interruptEffect,
-allowMoveChar,
-inConvo,
-convoClickCooldown,
+//interruptEffect,
+//allowMoveChar,
+//inConvo,
+//convoClickCooldown,
 gamemode,
 gamestate,
 gameLoad,
-NUM_CACHED_LEVELS } from "./Gamestate.js";
+NUM_CACHED_LEVELS,
+ClearMapObjects } from "./Gamestate.js";
 
 
 
@@ -150,7 +152,7 @@ function loadLevel(exitObj) { //levelnum, transitionType) {
     }
 
     gamestate.currentGameMode = gamemode["inovermap"];
-    allowMoveChar = true;
+    gamestate.allowMoveChar = true;
 };
 
 var tryQueueLevel = function(levelnum) {
@@ -244,9 +246,9 @@ function createMapObject(numcode, level, x, y, i, j) {
         std.printf('>>>' + newobj.collisionType);
         std.printf('>>>' + newobj.collisionType);
         newobj.interruptEffect = function() {
-            allowMoveChar = false;
+            gamestate.allowMoveChar = false;
             loadLevel(exitObj);
-            interruptEffect = null;
+            gamestate.interruptEffect = null;
         }
         tryQueueLevel(newobj.levelid);
     }
@@ -475,7 +477,8 @@ function SetupLevelFromImage_Static() {
 
     var currentSource = tile_dblue_pixels;
 
-    mapobjects = [];
+    //mapobjects = [];
+    ClearMapObjects();
 
     for(var ti = 0; ti < 20; ti++) {
         for(var tj = 0; tj < 14; tj++) {

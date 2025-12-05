@@ -67,12 +67,50 @@ tile_lightstone.height = 32;
 tile_dblue.width = 32;
 tile_dblue.height = 32;
 
-var screen_640x448 = null;
+//var screen_640x448 = null;
 
 
 
 
 const START_BMP24 = 54;
+
+
+
+
+var level_0_pathedSpecials = {
+
+    1: { code: 'doorkey' },
+    2: { code: 'eedoor_e' },
+    3: { code: 'eedoor_n' },
+    4: { code: 'chest_w', id: 0 },
+    5: { code: 'chest_n', id: 1 },
+    6: { code: 'enterzone', id: 0 },
+    7: { code: 'exitzone', id: 1, dest: 0, transition: 'flow' },
+    8: { code: 'exitzone', id: 1, dest: 1, transition: 'flow' },
+
+    10: { code: 'door_e' },
+    11: { code: 'door_n' },
+    
+    16: { code: 'exitzone', id: 1, dest: 2, transition: 'flow' },
+    17: { code: 'exitzone', id: 1, dest: 0, transition: 'flow' },
+
+    18: { code: 'exitzone', id: 1, dest: 0, transition: 'flow' },
+    19: { code: 'exitzone', id: 1, dest: 1, transition: 'flow' },
+    20: { code: 'exitzone', id: 1, dest: 1, transition: 'flow' },
+    21: { code: 'exitzone', id: 1, dest: 1, transition: 'flow' },
+    22: { code: 'exitzone', id: 1, dest: 1, transition: 'flow' },
+    23: { code: 'exitzone', id: 1, dest: 1, transition: 'flow' },
+    24: { code: 'exitzone', id: 1, dest: 1, transition: 'flow' },
+    25: { code: 'exitzone', id: 1, dest: 1, transition: 'flow' },
+
+    
+    32: { code: 'character', id: 0, action: 'talk' },
+    33: { code: 'character', id: 1, action: 'talk' },
+    
+    42: { code: 'chest_r', id: 0 },
+    43: { code: 'chest_r', id: 1 },
+
+}; 
 
 
 
@@ -85,6 +123,7 @@ export { resfolder,
     tile_dblue,
     uibg_sprite,
     mapobjSprites,
-    screen_640x448,
+    //screen_640x448,
     START_BMP24,
+    level_0_pathedSpecials,
  };

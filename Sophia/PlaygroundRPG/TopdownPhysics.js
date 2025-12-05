@@ -9,17 +9,19 @@ import { resfolder,
     tile_dblue,
     uibg_sprite,
     mapobjSprites,
-    screen_640x448,
-    START_BMP24, } from "./GameData.js"; 
+    //screen_640x448,
+    START_BMP24,
+    level_0_pathedSpecials, } from "./GameData.js"; 
 import { charpos,  mapobjects,
-interruptEffect,
-allowMoveChar,
-inConvo,
-convoClickCooldown,
+//interruptEffect,
+//allowMoveChar,
+//inConvo,
+//convoClickCooldown,
 gamemode,
 gamestate,
 gameLoad,
-NUM_CACHED_LEVELS } from "./Gamestate.js";
+NUM_CACHED_LEVELS,
+ClearMapObjects } from "./Gamestate.js";
 
 import {  
     abmap,
@@ -573,7 +575,7 @@ function checkObectCollisions() {
     }
 
     if(interruptSideEffectObj && interruptSideEffectObj.interruptEffect) {
-        interruptEffect = interruptSideEffectObj.interruptEffect;
+        gamestate.interruptEffect = interruptSideEffectObj.interruptEffect;
     } else {        
         for(let d = 0; d < idsToDelete.length; d++) {
 

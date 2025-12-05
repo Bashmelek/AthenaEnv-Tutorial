@@ -8,8 +8,9 @@ import { resfolder,
     tile_dblue,
     uibg_sprite,
     mapobjSprites,
-    screen_640x448,
-    START_BMP24, } from "./GameData.js";
+    //screen_640x448,
+    START_BMP24,
+    level_0_pathedSpecials, } from "./GameData.js";
 
 
 var charpos = { x: 50.0, y: 50.0, width: 32, height: 32, drawoffsetx: 0.0, drawoffsety: -32.0, isFlipped: false, 
@@ -20,13 +21,16 @@ var charpos = { x: 50.0, y: 50.0, width: 32, height: 32, drawoffsetx: 0.0, drawo
 
 var mapobjects = new Array();
 
+function ClearMapObjects() {
+    mapobjects = [];
+}
 
 
-var interruptEffect = null;
-var allowMoveChar = true;
-var inConvo = false;
+// var interruptEffect = null;
+// var allowMoveChar = true;
+// var inConvo = false;
 
-var convoClickCooldown = 10;
+// var convoClickCooldown = 10;
 
 var gamemode = {
     "loadingmap": 0,
@@ -43,7 +47,12 @@ var gamestate = {
         numkeys: 0,
         interactableObj: null
     },
-    currentConvo: null
+    currentConvo: null,
+
+    interruptEffect: null,
+    allowMoveChar: true,
+    inConvo: false,
+    onvoClickCooldown: 10,
 };
 
 var gameLoad = {
@@ -60,14 +69,16 @@ const NUM_CACHED_LEVELS = 10;
 
 
 
-export { charpos,  mapobjects,
-interruptEffect,
-allowMoveChar,
-inConvo,
-convoClickCooldown,
+export { charpos,  
+    mapobjects,
+//interruptEffect,
+//allowMoveChar,
+//inConvo,
+//convoClickCooldown,
 gamemode,
 gamestate,
 gameLoad,
-NUM_CACHED_LEVELS
+NUM_CACHED_LEVELS,
+ClearMapObjects
 
  };
