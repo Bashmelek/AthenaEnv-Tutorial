@@ -297,15 +297,25 @@ function createMapObject(numcode, level, x, y, i, j) {
         if(newobj.charname == 'Mitsi' && gamestate.gotCat){
             return;
         }
+        
+
+        if(newobj.charname == 'Mitsi'){
+            newobj.drawoffsetx = -0.0;
+            newobj.drawoffsety = -19.0;
+        } else if(newobj.charname == 'Boris') {
+            newobj.drawoffsetx = -0.0;
+            newobj.drawoffsety = -32.0;
+        } else {
+            newobj.drawoffsetx = -0.0;
+            newobj.drawoffsety = -19.0;
+        }
 
         newobj.x = x;
         newobj.y = y;
         newobj.width = 32;
         newobj.height = 32;
         newobj.collisionType = 'block'
-        newobj.isInteractable = true;
-        newobj.drawoffsetx = -0.0;
-        newobj.drawoffsety = -19.0;
+        newobj.isInteractable = true; 
         newobj.action = cb.action || ref.action;
     }
 
