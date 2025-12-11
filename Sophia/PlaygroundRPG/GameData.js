@@ -29,6 +29,7 @@ const mapobjSprites = {
     doorkey: new Image(resfolder + "/doorkey32.png"),
     eastdoor: new Image(resfolder + "/eastdoor_32.png"),
     charcat: new Image(resfolder + "/charchar_64.png"),
+    charoldguy: new Image(resfolder + "/oldguyclear_32.png"),
     chest_r: new Image(resfolder + "/trchest_33.png"),
     chestopen_r: new Image(resfolder + "/trchestop_33.png"),
 };

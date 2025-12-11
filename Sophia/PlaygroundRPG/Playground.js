@@ -119,10 +119,14 @@ function getConvoByID(convoid) {
 
     switch(convoid)
     {
-        case convoid:
+        case 1:
 
         convoObj[0] = { text: "hello", nextid: 1 };
         convoObj[1] = { text: "let's team up!", endsideEffect: 'catjoin' };
+            break;
+        case 2:
+
+        convoObj[0] = { text: "Be careful out there!" };
 
         default:
             break;
@@ -138,6 +142,10 @@ function getConvoIdForChar(otherchar){
 
     if(otherchar.charname == 'Mitsi' && !gamestate.gotCat) {
         convoid = 1;
+    }
+
+    if(otherchar.charname == 'Boris') {
+        convoid = 2;
     }
 
     return convoid;
@@ -200,6 +208,8 @@ function DrawConvo() {
 
     if (p1Pad.justPressed(Pads.CROSS) && gamestate.convoClickCooldown <= 0) { 
 
+        gamestate.convoClickCooldown = 4;
+        
         var endsideEffect = gamestate.currentConvo[gamestate.currentConvo.currentNode].endsideEffect;
         if(endsideEffect && endsideEffect.length > 0) {
             RunConvoSideEffect(endsideEffect);
@@ -355,7 +365,7 @@ function RunInOverMap() {
         }
         gamestate.char.interactableObj = tempi;
 
-        if (gamestate.char.interactableObj && p1Pad.pressed(Pads.CROSS)) {
+        if (gamestate.char.interactableObj && p1Pad.justPressed(Pads.CROSS)) {
             var gobj = gamestate.char.interactableObj;
             if(gobj.code == 'door_e' && gamestate.char.numkeys > 0) {
                 var dkey = gobj.compkey;
@@ -385,7 +395,7 @@ function RunInOverMap() {
                 gobj.drawoffsetx = -10.0;
                 gobj.drawoffsety = -39.0;
             }
-            if(gobj.code == 'character') {
+            if(gobj.code == 'character' && gamestate.convoClickCooldown <= 0) {
                 if(gobj.action == 'talk') {
                     beginConvo(gobj, null);
                 }
@@ -416,11 +426,14 @@ function RunInOverMap() {
 
     charpos.charsprite = sprite;
 
+    
+    if(gamestate.convoClickCooldown >= 0) {
+        gamestate.convoClickCooldown--;
+        //std.printf("\n timeinitgame: " + gamestate.convoClickCooldown);  
+    }
+
     if(gamestate.inConvo) {
         DrawConvo();
-        if(gamestate.convoClickCooldown >= 0) {
-            gamestate.convoClickCooldown--;
-        }
     }
 
     

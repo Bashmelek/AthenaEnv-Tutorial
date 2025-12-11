@@ -78,6 +78,10 @@ function getCharObjInfo(charid) {
         cb.sprite = mapobjSprites.charcat;
         cb.charname = 'Mitsi';
     }
+    if(charid == 1) {
+        cb.sprite = mapobjSprites.charoldguy;
+        cb.charname = 'Boris';
+    }
 
     return cb;
 };

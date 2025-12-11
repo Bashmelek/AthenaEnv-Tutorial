@@ -52,7 +52,7 @@ var gamestate = {
     interruptEffect: null,
     allowMoveChar: true,
     inConvo: false,
-    onvoClickCooldown: 10,
+    convoClickCooldown: 10,
 };
 
 var gameLoad = {
