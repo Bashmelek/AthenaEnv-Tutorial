@@ -30,6 +30,7 @@ const mapobjSprites = {
     eastdoor: new Image(resfolder + "/eastdoor_32.png"),
     charcat: new Image(resfolder + "/charchar_64.png"),
     charoldguy: new Image(resfolder + "/oldguyclear_32.png"),
+    smallbaddy1: new Image(resfolder + "/smallbaddie_32.png"),
     chest_r: new Image(resfolder + "/trchest_33.png"),
     chestopen_r: new Image(resfolder + "/trchestop_33.png"),
 };
@@ -110,6 +111,9 @@ var level_0_pathedSpecials = {
     
     42: { code: 'chest_r', id: 0 },
     43: { code: 'chest_r', id: 1 },
+
+    
+    60: { code: 'badguy', id: 0, action: 'fight' },
 
 }; 
 

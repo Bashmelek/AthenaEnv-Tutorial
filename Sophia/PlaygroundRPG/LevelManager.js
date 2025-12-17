@@ -86,6 +86,17 @@ function getCharObjInfo(charid) {
     return cb;
 };
 
+function getBadGuyObjInfo(charid) {
+    var cb = {};
+
+    if(charid == 0) {
+        cb.sprite = mapobjSprites.smallbaddy1;
+        cb.charname = 'Smooks';
+    } 
+
+    return cb;
+};
+
 function loadLevel(exitObj) { //levelnum, transitionType) {
 
     var areamap;
@@ -309,6 +320,24 @@ function createMapObject(numcode, level, x, y, i, j) {
             newobj.drawoffsetx = -0.0;
             newobj.drawoffsety = -19.0;
         }
+
+        newobj.x = x;
+        newobj.y = y;
+        newobj.width = 32;
+        newobj.height = 32;
+        newobj.collisionType = 'block'
+        newobj.isInteractable = true; 
+        newobj.action = cb.action || ref.action;
+    }
+    if(ref.code == 'badguy') {
+        var cb = getBadGuyObjInfo(ref.id);
+        newobj.charid = ref.id;
+        newobj.sprite = cb.sprite;
+        newobj.charname = cb.charname;
+        
+
+        newobj.drawoffsetx = -0.0;
+        newobj.drawoffsety = -19.0;
 
         newobj.x = x;
         newobj.y = y;
